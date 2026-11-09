@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <rect width="180" height="180" rx="40" fill="#1f2937"/>
+  <rect x="42" y="34" width="96" height="112" rx="10" fill="#f9fafb"/>
+  <rect x="56" y="54" width="44" height="8" rx="4" fill="#1f2937"/>
+  <rect x="56" y="74" width="68" height="6" rx="3" fill="#9ca3af"/>
+  <rect x="56" y="90" width="60" height="6" rx="3" fill="#9ca3af"/>
+  <rect x="56" y="106" width="68" height="6" rx="3" fill="#9ca3af"/>
+  <circle cx="126" cy="130" r="22" fill="#f59e0b"/>
+  <text x="126" y="138" font-size="22" font-family="sans-serif" font-weight="700" text-anchor="middle" fill="#1f2937">한</text>
+</svg>

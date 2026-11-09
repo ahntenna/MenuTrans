@@ -1,0 +1,16 @@
+services:
+  menutrans:
+    build: .
+    container_name: menutrans
+    restart: unless-stopped
+    env_file: .env            # ANTHROPIC_API_KEY, CLAUDE_MODEL 등
+    environment:
+      DATA_DIR: /data
+    volumes:
+      - menutrans_data:/data   # SQLite + 원본 사진
+    ports:
+      # 기존 리버스 프록시(HTTPS)가 이 포트로 프록시한다. 외부에 직접 노출하지 않으려면 127.0.0.1 바인딩 유지.
+      - "127.0.0.1:8000:8000"
+
+volumes:
+  menutrans_data:
