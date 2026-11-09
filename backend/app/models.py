@@ -27,6 +27,16 @@ class RestaurantSession(Base):
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
     name: Mapped[str] = mapped_column(String(200))
     note: Mapped[str] = mapped_column(Text, default="")
+
+    # 가게 정보
+    store_name: Mapped[str] = mapped_column(String(200), default="")
+    address: Mapped[str] = mapped_column(String(500), default="")
+    map_url: Mapped[str] = mapped_column(String(1000), default="")
+    lat: Mapped[float | None] = mapped_column(Float, nullable=True)
+    lng: Mapped[float | None] = mapped_column(Float, nullable=True)
+    # 방문 일시 (선택)
+    visited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
 

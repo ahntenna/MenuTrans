@@ -14,6 +14,8 @@ from ..schemas import SessionCreate, SessionDetail, SessionSummary, SessionUpdat
 
 router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
+_STORE_FIELDS = ("store_name", "address", "map_url", "lat", "lng", "visited_at")
+
 
 @router.get("", response_model=list[SessionSummary])
 def list_sessions(db: Session = Depends(get_db)) -> list[SessionSummary]:
@@ -36,25 +38,29 @@ def list_sessions(db: Session = Depends(get_db)) -> list[SessionSummary]:
         .outerjoin(photo_count, photo_count.c.session_id == RestaurantSession.id)
         .outerjoin(item_count, item_count.c.session_id == RestaurantSession.id)
         .outerjoin(order_count, order_count.c.session_id == RestaurantSession.id)
-        .order_by(RestaurantSession.updated_at.desc())
+        # 방문 일시가 있으면 그 기준, 없으면 생성 시각 기준 최신순
+        .order_by(func.coalesce(RestaurantSession.visited_at, RestaurantSession.created_at).desc())
     ).all()
-    return [
-        SessionSummary(
-            id=s.id, name=s.name, note=s.note, created_at=s.created_at, updated_at=s.updated_at,
-            photo_count=pc, pending_count=pend, item_count=ic, order_count=oc,
-        )
-        for s, pc, pend, ic, oc in rows
-    ]
+    out: list[SessionSummary] = []
+    for s, pc, pend, ic, oc in rows:
+        summary = SessionSummary.model_validate(s)
+        summary.photo_count, summary.pending_count, summary.item_count, summary.order_count = pc, pend, ic, oc
+        out.append(summary)
+    return out
 
 
 @router.post("", response_model=SessionDetail, status_code=201)
 def create_session(body: SessionCreate, db: Session = Depends(get_db)) -> RestaurantSession:
     s = RestaurantSession(name=body.name.strip(), note=body.note)
+    for f in _STORE_FIELDS:
+        v = getattr(body, f)
+        if v is not None:
+            setattr(s, f, v.strip() if isinstance(v, str) else v)
     db.add(s)
     db.commit()
     db.refresh(s)
     hub.publish("session.created", {"session_id": s.id})
-    return s
+    return _load(db, s.id)
 
 
 def _load(db: Session, session_id: str) -> RestaurantSession:
@@ -80,6 +86,15 @@ def update_session(session_id: str, body: SessionUpdate, db: Session = Depends(g
         s.name = body.name.strip()
     if body.note is not None:
         s.note = body.note
+    for f in _STORE_FIELDS:
+        v = getattr(body, f)
+        if v is not None:
+            setattr(s, f, v.strip() if isinstance(v, str) else v)
+    if body.clear_location:
+        s.lat = None
+        s.lng = None
+    if body.clear_visited_at:
+        s.visited_at = None
     db.commit()
     hub.publish("session.updated", {"session_id": s.id})
     return _load(db, session_id)

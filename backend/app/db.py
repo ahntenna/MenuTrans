@@ -27,6 +27,14 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 
 # create_all 은 기존 테이블에 컬럼을 추가하지 않으므로, 새로 생긴 컬럼은 여기서 보강한다.
 _EXTRA_COLUMNS: dict[str, dict[str, str]] = {
+    "sessions": {
+        "store_name": "VARCHAR(200) NOT NULL DEFAULT ''",
+        "address": "VARCHAR(500) NOT NULL DEFAULT ''",
+        "map_url": "VARCHAR(1000) NOT NULL DEFAULT ''",
+        "lat": "FLOAT",
+        "lng": "FLOAT",
+        "visited_at": "DATETIME",
+    },
     "photos": {
         "progress_total": "INTEGER NOT NULL DEFAULT 0",
         "started_at": "DATETIME",

@@ -47,26 +47,45 @@ export interface Order {
   created_at: string
 }
 
-export interface SessionSummary {
+export interface SessionBase {
   id: string
   name: string
   note: string
+  /** 가게 정보 */
+  store_name: string
+  address: string
+  map_url: string
+  lat: number | null
+  lng: number | null
+  /** 방문 일시 (선택, ISO UTC) */
+  visited_at: string | null
   created_at: string
   updated_at: string
+}
+
+export interface SessionSummary extends SessionBase {
   photo_count: number
   item_count: number
   order_count: number
   pending_count: number
 }
 
-export interface SessionDetail {
-  id: string
-  name: string
-  note: string
-  created_at: string
-  updated_at: string
+export interface SessionDetail extends SessionBase {
   photos: Photo[]
   orders: Order[]
+}
+
+export interface SessionPatch {
+  name?: string
+  note?: string
+  store_name?: string
+  address?: string
+  map_url?: string
+  lat?: number
+  lng?: number
+  visited_at?: string
+  clear_location?: boolean
+  clear_visited_at?: boolean
 }
 
 export class ApiError extends Error {
@@ -103,8 +122,7 @@ export const api = {
   listSessions: () => request<SessionSummary[]>('/api/sessions'),
   createSession: (name: string, note = '') => request<SessionDetail>('/api/sessions', json('POST', { name, note })),
   getSession: (id: string) => request<SessionDetail>(`/api/sessions/${id}`),
-  updateSession: (id: string, patch: { name?: string; note?: string }) =>
-    request<SessionDetail>(`/api/sessions/${id}`, json('PATCH', patch)),
+  updateSession: (id: string, patch: SessionPatch) => request<SessionDetail>(`/api/sessions/${id}`, json('PATCH', patch)),
   deleteSession: (id: string) => request<void>(`/api/sessions/${id}`, { method: 'DELETE' }),
 
   uploadPhoto: (sessionId: string, file: File) => {

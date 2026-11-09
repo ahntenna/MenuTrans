@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, ConfigDict, Field, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
 
 class ORMModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     # SQLite 는 tzinfo 를 버리므로, UTC 로 저장된 값에 'Z' 를 붙여 내보낸다 (브라우저가 현지 시간으로 변환).
-    @field_serializer("created_at", "updated_at", "started_at", "analyzed_at", check_fields=False)
+    @field_serializer("created_at", "updated_at", "started_at", "analyzed_at", "visited_at", check_fields=False)
     def _ser_dt(self, v: datetime | None) -> str | None:
         if v is None:
             return None
@@ -80,33 +80,71 @@ class OrderOut(ORMModel):
 
 
 # ---------- Session ----------
-class SessionCreate(BaseModel):
+class _StoreFields(BaseModel):
+    """가게 정보 + 방문 일시. 생성/수정 요청에서 공통으로 사용."""
+
+    store_name: str | None = Field(default=None, max_length=200)
+    address: str | None = Field(default=None, max_length=500)
+    map_url: str | None = Field(default=None, max_length=1000)
+    lat: float | None = Field(default=None, ge=-90, le=90)
+    lng: float | None = Field(default=None, ge=-180, le=180)
+    visited_at: datetime | None = None
+
+    @field_validator("map_url")
+    @classmethod
+    def _check_url(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        v = v.strip()
+        if v and not (v.startswith("https://") or v.startswith("http://")):
+            raise ValueError("지도 링크는 http(s):// 로 시작해야 합니다.")
+        return v
+
+    @field_validator("visited_at")
+    @classmethod
+    def _to_utc(cls, v: datetime | None) -> datetime | None:
+        # 클라이언트는 ISO(UTC, 'Z') 로 보낸다. tz 없는 값은 UTC 로 간주.
+        if v is None:
+            return None
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v.astimezone(timezone.utc)
+
+
+class SessionCreate(_StoreFields):
     name: str = Field(min_length=1, max_length=200)
     note: str = ""
 
 
-class SessionUpdate(BaseModel):
+class SessionUpdate(_StoreFields):
     name: str | None = Field(default=None, min_length=1, max_length=200)
     note: str | None = None
+    # lat/lng/visited_at 을 비우려면 clear_* 플래그 사용 (None 은 "변경 없음" 이므로)
+    clear_location: bool = False
+    clear_visited_at: bool = False
 
 
-class SessionSummary(ORMModel):
+class _SessionBase(ORMModel):
     id: str
     name: str
     note: str
+    store_name: str
+    address: str
+    map_url: str
+    lat: float | None
+    lng: float | None
+    visited_at: datetime | None
     created_at: datetime
     updated_at: datetime
+
+
+class SessionSummary(_SessionBase):
     photo_count: int = 0
     item_count: int = 0
     order_count: int = 0
     pending_count: int = 0
 
 
-class SessionDetail(ORMModel):
-    id: str
-    name: str
-    note: str
-    created_at: datetime
-    updated_at: datetime
+class SessionDetail(_SessionBase):
     photos: list[PhotoOut]
     orders: list[OrderOut]

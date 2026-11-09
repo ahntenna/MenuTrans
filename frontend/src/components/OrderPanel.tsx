@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react'
 import { api, Order, SessionDetail } from '../api'
 import { formatDate, formatMoney } from '../format'
+import { TrashIcon } from './icons'
 
 export default function OrderPanel({
   session,
@@ -72,7 +73,7 @@ export default function OrderPanel({
                     +
                   </button>
                   <button className="danger icon" onClick={() => remove(o)} aria-label="주문 삭제" title="주문 삭제">
-                    🗑
+                    <TrashIcon />
                   </button>
                 </div>
               </div>

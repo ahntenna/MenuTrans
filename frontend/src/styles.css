@@ -366,9 +366,116 @@ button.big {
   }
 }
 
+/* 아이콘 전용 버튼: 고정 크기 + flex 가운데 정렬 (이모지 기준선 문제 회피) */
 button.icon {
-  padding: 0.35rem 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
   margin-left: 0.5rem;
+  line-height: 1;
+}
+button.icon svg {
+  display: block;
+}
+
+/* 세션 정보 카드 */
+.session-info h1 {
+  font-size: 1.35rem;
+  margin: 0 0 0.15rem;
+}
+.info-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.store-name {
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+.address {
+  margin-top: 0.2rem;
+  opacity: 0.85;
+}
+.info-actions {
+  margin-top: 0.6rem;
+}
+.session-info .note {
+  margin: 0.5rem 0 0;
+  white-space: pre-wrap;
+}
+.store-line {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
+.small-btn {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+}
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  background: var(--primary);
+  color: var(--primary-text);
+  font-size: 0.95rem;
+}
+.btn-link svg {
+  display: block;
+}
+
+/* 편집 폼 */
+.form {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.form h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+}
+.form label,
+.form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.form label input,
+.form label textarea,
+.form .field .row {
+  color: var(--text);
+}
+.form textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  resize: vertical;
+}
+.form .row input[type='datetime-local'] {
+  flex: 1;
+  min-width: 11rem;
+}
+.req {
+  color: var(--danger);
+}
+.form-actions {
+  margin-top: 0.25rem;
+}
+.spacer {
+  flex: 1;
 }
 
 .photo-grid {

@@ -2,7 +2,7 @@ import { FormEvent, useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, SessionSummary } from '../api'
 import { useEventBus } from '../App'
-import { formatDate } from '../format'
+import { formatDate, formatVisit } from '../format'
 
 export default function SessionListPage() {
   const [sessions, setSessions] = useState<SessionSummary[] | null>(null)
@@ -63,8 +63,14 @@ export default function SessionListPage() {
             <Link to={`/sessions/${s.id}`} className="card session">
               <div className="session-head">
                 <strong>{s.name}</strong>
-                <span className="muted small">{formatDate(s.created_at)}</span>
+                <span className="muted small">{s.visited_at ? `방문 ${formatVisit(s.visited_at)}` : formatDate(s.created_at)}</span>
               </div>
+              {(s.store_name || s.address) && (
+                <div className="muted small store-line">
+                  {s.store_name && s.store_name !== s.name && <span>{s.store_name}</span>}
+                  {s.address && <span>{s.address}</span>}
+                </div>
+              )}
               <div className="chips">
                 <span className="chip">사진 {s.photo_count}</span>
                 <span className="chip">메뉴 {s.item_count}</span>

@@ -7,6 +7,7 @@ import PhotoStrip from '../components/PhotoStrip'
 import MenuList from '../components/MenuList'
 import OrderPanel from '../components/OrderPanel'
 import ProgressBanner from '../components/ProgressBanner'
+import SessionInfoCard from '../components/SessionInfoCard'
 
 type Tab = 'menu' | 'orders' | 'photos'
 
@@ -17,7 +18,6 @@ export default function SessionDetailPage() {
   const [session, setSession] = useState<SessionDetail | null>(null)
   const [error, setError] = useState('')
   const [tab, setTab] = useState<Tab>('menu')
-  const [editing, setEditing] = useState(false)
   const reloadTimer = useRef<number | null>(null)
 
   const load = useCallback(async () => {
@@ -62,32 +62,19 @@ export default function SessionDetailPage() {
   if (error && !session) return <p className="error">{error}</p>
   if (!session) return <p className="muted">불러오는 중…</p>
 
-  const onRename = async () => {
-    const name = window.prompt('식당 이름', session.name)
-    if (name && name.trim() && name.trim() !== session.name) {
-      await api.updateSession(session.id, { name: name.trim() })
-    }
-    setEditing(false)
-  }
   const onDelete = async () => {
     if (!window.confirm(`"${session.name}" 세션과 사진, 주문 기록을 모두 삭제할까요?`)) return
-    await api.deleteSession(session.id)
-    navigate('/')
+    try {
+      await api.deleteSession(session.id)
+      navigate('/')
+    } catch (e) {
+      setError((e as Error).message)
+    }
   }
 
   return (
     <>
-      <div className="session-title">
-        <h1 onClick={() => setEditing((v) => !v)}>{session.name}</h1>
-        {editing && (
-          <div className="row">
-            <button onClick={onRename}>이름 변경</button>
-            <button className="danger" onClick={onDelete}>
-              세션 삭제
-            </button>
-          </div>
-        )}
-      </div>
+      <SessionInfoCard session={session} onError={setError} onDelete={onDelete} />
 
       <PhotoUploader sessionId={session.id} onError={setError} />
       {error && <p className="error">{error}</p>}
