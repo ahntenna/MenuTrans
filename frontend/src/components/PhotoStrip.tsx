@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { api, Photo } from '../api'
 import { formatDate } from '../format'
+import { confirmDialog } from './ConfirmDialog'
 
 const STATUS_LABEL: Record<Photo['status'], string> = {
   pending: '대기',
@@ -20,7 +21,7 @@ export default function PhotoStrip({ photos, onError }: { photos: Photo[]; onErr
     }
   }
   const remove = async (p: Photo) => {
-    if (!window.confirm('이 사진과 추출된 메뉴를 삭제할까요? (주문 기록은 남습니다)')) return
+    if (!(await confirmDialog({ title: '사진을 삭제할까요?', message: '이 사진에서 추출된 메뉴도 함께 삭제됩니다.\n주문 기록은 남습니다.', confirmLabel: '삭제', danger: true }))) return
     try {
       await api.deletePhoto(p.id)
       setOpen(null)

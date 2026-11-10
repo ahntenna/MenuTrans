@@ -1,6 +1,7 @@
 import { createContext, FormEvent, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { api, ApiError, UNAUTHORIZED_EVENT } from './api'
+import { DialogHost } from './components/ConfirmDialog'
 import { AutoThemeIcon, GearIcon, MoonIcon, SunIcon } from './components/icons'
 import { THEME_LABEL, useTheme } from './theme'
 import { ServerEvent, useServerEvents } from './useEvents'
@@ -197,6 +198,7 @@ function Shell({ offline, themeState }: { offline: boolean; themeState: ReturnTy
       <main className="page">
         <Outlet />
       </main>
+      <DialogHost />
     </EventBusContext.Provider>
   )
 }

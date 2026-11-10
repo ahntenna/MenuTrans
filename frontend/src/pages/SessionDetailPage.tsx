@@ -8,6 +8,7 @@ import MenuList from '../components/MenuList'
 import OrderPanel from '../components/OrderPanel'
 import ProgressBanner from '../components/ProgressBanner'
 import SessionInfoCard from '../components/SessionInfoCard'
+import { confirmDialog } from '../components/ConfirmDialog'
 
 type Tab = 'menu' | 'orders' | 'photos'
 
@@ -63,7 +64,7 @@ export default function SessionDetailPage() {
   if (!session) return <p className="muted">불러오는 중…</p>
 
   const onDelete = async () => {
-    if (!window.confirm(`"${session.name}" 세션과 사진, 주문 기록을 모두 삭제할까요?`)) return
+    if (!(await confirmDialog({ title: '세션을 삭제할까요?', message: `"${session.name}" 세션의 사진, 메뉴, 주문 기록이 모두 삭제됩니다.`, confirmLabel: '삭제', danger: true }))) return
     try {
       await api.deleteSession(session.id)
       navigate('/')

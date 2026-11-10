@@ -1020,3 +1020,87 @@ button.model-option.selected {
   gap: 0.4rem;
   font-weight: 600;
 }
+
+/* ---------- 확인 메시지 상자 ---------- */
+.confirm-layer {
+  z-index: 80; /* 수정 창·직원 화면 위에 뜬다 */
+  animation: confirm-fade 0.14s ease;
+}
+.confirm-box {
+  width: 100%;
+  max-width: 340px;
+  padding: 1.4rem 1.2rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  text-align: center;
+  background: var(--bg);
+  border-radius: 22px;
+  box-shadow: var(--raise), 0 16px 40px rgba(0, 0, 0, 0.28);
+  animation: confirm-pop 0.16s ease;
+}
+/* 파인 원 안에 아이콘 */
+.confirm-icon {
+  width: 3.2rem;
+  height: 3.2rem;
+  margin-bottom: 0.2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--danger);
+  box-shadow: var(--inset);
+}
+.confirm-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.confirm-box h2 {
+  font-size: 1.05rem;
+}
+.confirm-box p {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.confirm-actions {
+  display: flex;
+  gap: 0.8rem;
+  width: 100%;
+  margin-top: 0.7rem;
+}
+.confirm-actions button {
+  flex: 1;
+  min-height: 2.5rem;
+  border-radius: 12px;
+}
+button.danger-fill {
+  background: var(--danger);
+  color: #fff;
+}
+button.danger-fill:not(:disabled):active {
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.28);
+}
+.confirm-actions button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+}
+@keyframes confirm-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes confirm-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .confirm-layer,
+  .confirm-box {
+    animation: none;
+  }
+}

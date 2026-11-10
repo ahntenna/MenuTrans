@@ -4,6 +4,7 @@ import { formatMoney } from '../format'
 import { formatKrw, toKrw, useRates } from '../rates'
 import { ImageIcon, PencilIcon, RefreshIcon, TrashIcon } from './icons'
 import PhotoLocateDialog from './PhotoLocateDialog'
+import { confirmDialog } from './ConfirmDialog'
 
 const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim()
 
@@ -66,7 +67,7 @@ export default function MenuList({
   }
 
   const remove = async (item: MenuItem) => {
-    if (!window.confirm(`"${item.translated_name}" 메뉴를 목록에서 삭제할까요? (주문 기록은 남습니다)`)) return
+    if (!(await confirmDialog({ title: '메뉴를 삭제할까요?', message: `"${item.translated_name}" 메뉴가 목록에서 삭제됩니다.\n주문 기록은 남습니다.`, confirmLabel: '삭제', danger: true }))) return
     try {
       await api.deleteMenuItem(item.id)
     } catch (e) {
@@ -77,9 +78,11 @@ export default function MenuList({
   const reload = async () => {
     const n = session.photos.length
     if (
-      !window.confirm(
-        `메뉴판을 초기화하고 사진 ${n}장을 모두 다시 분석합니다.\n직접 수정하거나 삭제한 메뉴는 원래대로 돌아갑니다. 계속할까요?`,
-      )
+      !(await confirmDialog({
+        title: '메뉴판을 다시 불러올까요?',
+        message: `메뉴판을 초기화하고 사진 ${n}장을 모두 다시 분석합니다.\n직접 수정하거나 삭제한 메뉴는 원래대로 돌아갑니다.`,
+        confirmLabel: '다시 불러오기',
+      }))
     )
       return
     setReloading(true)

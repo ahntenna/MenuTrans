@@ -3,6 +3,7 @@ import { api, SessionDetail, SessionPatch } from '../api'
 import { formatVisit, googleMapsUrl, isoToLocalInput, localInputToIso } from '../format'
 import { formatKrw, formatUsd, toKrw, useRates } from '../rates'
 import { MapPinIcon, ShareIcon } from './icons'
+import { alertDialog } from './ConfirmDialog'
 
 // 세션 상단: 제목 + 가게 정보(상호명, 주소, 구글 맵) + 방문 일시. 탭하면 편집 폼이 열린다.
 export default function SessionInfoCard({
@@ -28,7 +29,7 @@ export default function SessionInfoCard({
         await navigator.share({ title: session.name, text })
       } else {
         await navigator.clipboard.writeText(text)
-        window.alert('세션 내용을 클립보드에 복사했습니다.')
+        await alertDialog({ title: '클립보드에 복사했습니다', message: '세션 내용을 원하는 곳에 붙여 넣으세요.' })
       }
     } catch (e) {
       if ((e as Error).name !== 'AbortError') onError(`공유하지 못했습니다: ${(e as Error).message}`)

@@ -3,6 +3,7 @@ import { api, Order, SessionDetail } from '../api'
 import { formatMoney } from '../format'
 import { formatKrw, toKrw, useRates } from '../rates'
 import { TrashIcon } from './icons'
+import { confirmDialog } from './ConfirmDialog'
 
 export default function OrderPanel({
   session,
@@ -33,7 +34,7 @@ export default function OrderPanel({
   }
 
   const remove = async (o: Order) => {
-    if (!window.confirm(`"${o.original_name || o.name_snapshot}" 주문을 삭제할까요?`)) return
+    if (!(await confirmDialog({ title: '주문을 삭제할까요?', message: o.original_name || o.name_snapshot, confirmLabel: '삭제', danger: true }))) return
     try {
       await api.deleteOrder(o.id)
     } catch (e) {
