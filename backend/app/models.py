@@ -110,6 +110,9 @@ class Order(Base):
     )
     # 항목 삭제에 대비해 주문 시점의 이름/가격을 복사해 둔다
     name_snapshot: Mapped[str] = mapped_column(String(300))
+    # 주문 탭 표시용: 원어 메뉴명(직원에게 보여 주기 좋게 강조)과 번역명
+    original_name: Mapped[str] = mapped_column(String(300), default="")
+    translated_name: Mapped[str] = mapped_column(String(300), default="")
     price_snapshot: Mapped[str] = mapped_column(String(100), default="")
     price_value: Mapped[float | None] = mapped_column(Float, nullable=True)
     quantity: Mapped[int] = mapped_column(Integer, default=1)

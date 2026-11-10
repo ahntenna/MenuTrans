@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -14,7 +15,7 @@ from .config import settings
 from .db import engine, migrate
 from .events import hub
 from .models import Base
-from .routers import events, orders, photos, sessions
+from .routers import events, items, orders, photos, sessions
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("menutrans")
@@ -29,6 +30,7 @@ if (Path(__file__).resolve().parents[1] / "static").exists():
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(engine)
     migrate()
+    analyzer.bind_loop(asyncio.get_running_loop())
     if not settings.anthropic_api_key:
         log.warning("ANTHROPIC_API_KEY 가 설정되지 않았습니다. SDK 의 다른 자격증명 경로가 없으면 분석이 실패합니다.")
     n = analyzer.requeue_unfinished()
@@ -48,6 +50,7 @@ app.add_middleware(
 
 app.include_router(sessions.router)
 app.include_router(photos.router)
+app.include_router(items.router)
 app.include_router(orders.router)
 app.include_router(events.router)
 

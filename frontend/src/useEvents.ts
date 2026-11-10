@@ -18,6 +18,7 @@ const EVENT_TYPES = [
   'photo.updated',
   'photo.deleted',
   'item.added',
+  'item.changed',
   'order.changed',
 ]
 

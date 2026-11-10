@@ -35,6 +35,10 @@ _EXTRA_COLUMNS: dict[str, dict[str, str]] = {
         "lng": "FLOAT",
         "visited_at": "DATETIME",
     },
+    "orders": {
+        "original_name": "VARCHAR(300) NOT NULL DEFAULT ''",
+        "translated_name": "VARCHAR(300) NOT NULL DEFAULT ''",
+    },
     "photos": {
         "progress_total": "INTEGER NOT NULL DEFAULT 0",
         "started_at": "DATETIME",

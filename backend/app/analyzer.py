@@ -30,8 +30,20 @@ class Analyzer:
         self._engine = engine
         self._sem = asyncio.Semaphore(settings.analyze_concurrency)
         self._tasks: set[asyncio.Task] = set()
+        self._loop: asyncio.AbstractEventLoop | None = None
+
+    def bind_loop(self, loop: asyncio.AbstractEventLoop) -> None:
+        """서버 시작 시 이벤트 루프를 등록한다 (스레드풀에서 도는 동기 엔드포인트에서도 예약할 수 있도록)."""
+        self._loop = loop
 
     def schedule(self, photo_id: str) -> None:
+        # 동기 엔드포인트는 스레드풀에서 실행되어 실행 중인 루프가 없으므로 루프 스레드로 넘긴다.
+        loop = self._loop
+        if loop is None:
+            loop = asyncio.get_running_loop()
+        loop.call_soon_threadsafe(self._spawn, photo_id)
+
+    def _spawn(self, photo_id: str) -> None:
         task = asyncio.create_task(self._run(photo_id))
         self._tasks.add(task)
         task.add_done_callback(self._tasks.discard)

@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react'
 import { api, Order, SessionDetail } from '../api'
-import { formatDate, formatMoney } from '../format'
+import { formatMoney } from '../format'
 import { TrashIcon } from './icons'
 
 export default function OrderPanel({
@@ -29,7 +29,7 @@ export default function OrderPanel({
   }
 
   const remove = async (o: Order) => {
-    if (!window.confirm(`"${o.name_snapshot}" 주문을 삭제할까요?`)) return
+    if (!window.confirm(`"${o.original_name || o.name_snapshot}" 주문을 삭제할까요?`)) return
     try {
       await api.deleteOrder(o.id)
     } catch (e) {
@@ -55,30 +55,34 @@ export default function OrderPanel({
         <p className="muted">아직 주문 기록이 없습니다. 메뉴판 탭에서 "주문" 을 누르거나 아래에 직접 입력하세요.</p>
       ) : (
         <ul className="list">
-          {session.orders.map((o) => (
-            <li key={o.id} className="card order">
-              <div className="order-main">
-                <div>
-                  <strong>{o.name_snapshot}</strong>
-                  <div className="muted small">
-                    {o.price_snapshot || formatMoney(o.price_value, currency) || '가격 미상'} · {formatDate(o.created_at)}
+          {session.orders.map((o) => {
+            // 원어 메뉴명을 제목으로 강조 (직원에게 그대로 보여 줄 수 있도록). 예전 주문은 name_snapshot 으로 대체.
+            const title = o.original_name || o.name_snapshot
+            const priceLabel = o.price_snapshot || formatMoney(o.price_value, currency) || '가격 미상'
+            return (
+              <li key={o.id} className="card order">
+                <div className="order-main">
+                  <div className="order-names">
+                    <strong className="order-title">{title}</strong>
+                    {o.translated_name && <div className="order-sub">{o.translated_name}</div>}
+                    <div className="muted small">{priceLabel}</div>
+                  </div>
+                  <div className="qty">
+                    <button onClick={() => changeQty(o, -1)} aria-label="수량 감소" disabled={o.quantity <= 1}>
+                      −
+                    </button>
+                    <span>{o.quantity}</span>
+                    <button onClick={() => changeQty(o, +1)} aria-label="수량 증가">
+                      +
+                    </button>
+                    <button className="danger icon" onClick={() => remove(o)} aria-label="주문 삭제" title="주문 삭제">
+                      <TrashIcon />
+                    </button>
                   </div>
                 </div>
-                <div className="qty">
-                  <button onClick={() => changeQty(o, -1)} aria-label="수량 감소" disabled={o.quantity <= 1}>
-                    −
-                  </button>
-                  <span>{o.quantity}</span>
-                  <button onClick={() => changeQty(o, +1)} aria-label="수량 증가">
-                    +
-                  </button>
-                  <button className="danger icon" onClick={() => remove(o)} aria-label="주문 삭제" title="주문 삭제">
-                    <TrashIcon />
-                  </button>
-                </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
       )}
 

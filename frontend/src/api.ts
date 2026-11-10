@@ -14,6 +14,15 @@ export interface MenuItem {
   tags: string[]
 }
 
+export interface MenuItemPatch {
+  category?: string
+  original_name?: string
+  translated_name?: string
+  description?: string
+  price_text?: string
+  tags?: string[]
+}
+
 export type PhotoStatus = 'pending' | 'processing' | 'done' | 'error'
 
 export interface Photo {
@@ -40,6 +49,9 @@ export interface Order {
   session_id: string
   menu_item_id: string | null
   name_snapshot: string
+  /** 원어 메뉴명 (예전 주문은 빈 문자열일 수 있음 → name_snapshot 으로 대체 표시) */
+  original_name: string
+  translated_name: string
   price_snapshot: string
   price_value: number | null
   quantity: number
@@ -124,6 +136,12 @@ export const api = {
   getSession: (id: string) => request<SessionDetail>(`/api/sessions/${id}`),
   updateSession: (id: string, patch: SessionPatch) => request<SessionDetail>(`/api/sessions/${id}`, json('PATCH', patch)),
   deleteSession: (id: string) => request<void>(`/api/sessions/${id}`, { method: 'DELETE' }),
+  /** 메뉴판 다시 불러오기: 추출된 메뉴를 지우고 모든 사진을 다시 분석 */
+  reanalyzeSession: (id: string) => request<SessionDetail>(`/api/sessions/${id}/reanalyze`, { method: 'POST' }),
+
+  updateMenuItem: (itemId: string, patch: MenuItemPatch) =>
+    request<MenuItem>(`/api/menu-items/${itemId}`, json('PATCH', patch)),
+  deleteMenuItem: (itemId: string) => request<void>(`/api/menu-items/${itemId}`, { method: 'DELETE' }),
 
   uploadPhoto: (sessionId: string, file: File) => {
     const fd = new FormData()

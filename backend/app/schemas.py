@@ -33,6 +33,15 @@ class MenuItemOut(ORMModel):
     tags: list[str]
 
 
+class MenuItemUpdate(BaseModel):
+    category: str | None = Field(default=None, max_length=200)
+    original_name: str | None = Field(default=None, min_length=1, max_length=300)
+    translated_name: str | None = Field(default=None, min_length=1, max_length=300)
+    description: str | None = None
+    price_text: str | None = Field(default=None, max_length=100)
+    tags: list[str] | None = None
+
+
 # ---------- Photo ----------
 class PhotoOut(ORMModel):
     id: str
@@ -72,6 +81,8 @@ class OrderOut(ORMModel):
     session_id: str
     menu_item_id: str | None
     name_snapshot: str
+    original_name: str
+    translated_name: str
     price_snapshot: str
     price_value: float | None
     quantity: int

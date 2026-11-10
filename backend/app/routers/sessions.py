@@ -100,6 +100,30 @@ def update_session(session_id: str, body: SessionUpdate, db: Session = Depends(g
     return _load(db, session_id)
 
 
+@router.post("/{session_id}/reanalyze", response_model=SessionDetail)
+def reanalyze_session(session_id: str, db: Session = Depends(get_db)) -> RestaurantSession:
+    """메뉴판 다시 불러오기: 추출된 메뉴를 모두 지우고 세션의 모든 사진을 다시 분석한다."""
+    from ..analyzer import analyzer
+
+    s = _load(db, session_id)
+    if any(p.status in ("pending", "processing") for p in s.photos):
+        raise HTTPException(409, "분석 중인 사진이 있습니다. 끝난 뒤 다시 시도해 주세요.")
+    photo_ids = []
+    for p in s.photos:
+        for item in list(p.items):
+            db.delete(item)
+        p.status = "pending"
+        p.error = ""
+        p.progress_total = 0
+        p.started_at = None
+        photo_ids.append(p.id)
+    db.commit()
+    hub.publish("session.updated", {"session_id": session_id})
+    for pid in photo_ids:
+        analyzer.schedule(pid)
+    return _load(db, session_id)
+
+
 @router.delete("/{session_id}", status_code=204)
 def delete_session(session_id: str, db: Session = Depends(get_db)) -> None:
     s = db.get(RestaurantSession, session_id)

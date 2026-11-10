@@ -30,3 +30,21 @@ export function MapPinIcon() {
     </svg>
   )
 }
+
+export function PencilIcon() {
+  return (
+    <svg {...base}>
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+    </svg>
+  )
+}
+
+export function RefreshIcon() {
+  return (
+    <svg {...base}>
+      <path d="M21 12a9 9 0 1 1-2.6-6.4" />
+      <path d="M21 3v6h-6" />
+    </svg>
+  )
+}
