@@ -1,7 +1,7 @@
 import { createContext, FormEvent, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { api, ApiError, UNAUTHORIZED_EVENT } from './api'
-import { AutoThemeIcon, MoonIcon, SunIcon } from './components/icons'
+import { AutoThemeIcon, GearIcon, MoonIcon, SunIcon } from './components/icons'
 import { THEME_LABEL, useTheme } from './theme'
 import { ServerEvent, useServerEvents } from './useEvents'
 
@@ -188,6 +188,9 @@ function Shell({ offline, themeState }: { offline: boolean; themeState: ReturnTy
           >
             {theme === 'auto' ? <AutoThemeIcon /> : theme === 'dark' ? <MoonIcon /> : <SunIcon />}
           </button>
+          <Link to="/settings" className="icon-link" aria-label="설정" title="설정">
+            <GearIcon />
+          </Link>
         </div>
       </header>
       {offline && <div className="offline-bar">오프라인 · 저장된 내용을 표시 중입니다. 변경은 연결 후에 할 수 있습니다.</div>}

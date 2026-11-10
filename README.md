@@ -81,7 +81,7 @@ Caddy 는 기본 설정으로 SSE 와 업로드가 동작한다 (`reverse_proxy 
 | 이름 | 기본값 | 설명 |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | – | Claude API 키 (필수) |
-| `CLAUDE_MODEL` | `claude-opus-5-5` | 분석 모델. 비용을 낮추려면 `claude-sonnet-5-5` / `claude-haiku-5-5` 로 실측 비교 |
+| `CLAUDE_MODEL` | `claude-opus-5-5` | 분석 모델의 기본값. 앱의 설정 화면(상단 톱니바퀴)에서 바꾸면 그 값이 우선하며 `DATA_DIR/settings.json` 에 저장된다 |
 | `APP_PASSWORD` | (없음) | 공용 비밀번호. 설정하면 모든 API 가 로그인 쿠키를 요구한다. 비워 두면 주소를 아는 누구나 접근 가능 |
 | `MENU_ENGINE` | `claude` | `fake` 로 두면 API 키 없이 데모 항목을 1.5초 간격으로 흘려보내 UI(실시간 추가·진행률)를 시험할 수 있다 |
 | `DATA_DIR` | `./data` (Docker: `/data`) | DB 와 사진 저장 위치 |

@@ -946,3 +946,77 @@ label.check input:checked::after {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------- 설정 ---------- */
+.icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ctl);
+  height: var(--ctl);
+  border-radius: 50%;
+  color: var(--muted);
+  box-shadow: var(--raise-sm);
+}
+.icon-link:active {
+  box-shadow: var(--inset);
+}
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+.settings-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.settings-warn {
+  color: var(--warn);
+}
+.model-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin: 0.3rem 0;
+}
+button.model-option {
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+  white-space: normal;
+  line-height: 1.4;
+  font-weight: 400;
+}
+/* 선택된 모델: 눌려 있는 면 */
+button.model-option.selected {
+  box-shadow: var(--inset);
+}
+.model-radio {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.15rem;
+  border-radius: 50%;
+  box-shadow: var(--inset-sm);
+}
+.model-option.selected .model-radio {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--accent);
+}
+.model-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.model-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+}

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 # (입력, 출력)
 PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
+    "claude-fable-5-2": (8.0, 40.0),
     "claude-fable-5-1": (10.0, 50.0),
     "claude-fable-5": (10.0, 50.0),
     "claude-opus-5-5": (4.0, 20.0),

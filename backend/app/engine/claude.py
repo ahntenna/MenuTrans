@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import base64
 import json
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 
 import anthropic
 
@@ -94,10 +94,11 @@ class _ItemStreamParser:
 
 
 class ClaudeMenuEngine(MenuEngine):
-    def __init__(self, model: str, target_language: str, source_languages: list[str], api_key: str | None = None) -> None:
+    def __init__(self, model: str | Callable[[], str], target_language: str, source_languages: list[str], api_key: str | None = None) -> None:
         # api_key 가 None 이면 ANTHROPIC_API_KEY 환경변수 등에서 자동으로 읽는다.
         self._client = anthropic.AsyncAnthropic(api_key=api_key, max_retries=3, timeout=300.0)
-        self._model = model
+        # 호출할 때마다 모델을 다시 읽는다 (실행 중 설정 변경 반영)
+        self._model: Callable[[], str] = model if callable(model) else (lambda: model)
         self._system = (
             "You are an expert menu reader and translator for Korean travelers.\n"
             f"The photo shows a restaurant menu written in one of: {', '.join(source_languages)}.\n"
@@ -120,9 +121,10 @@ class ClaudeMenuEngine(MenuEngine):
         data = base64.standard_b64encode(image_jpeg).decode("ascii")
         parser = _ItemStreamParser()
         meta_sent = False
+        model = self._model()  # 이 분석이 끝날 때까지는 같은 모델로 기록
 
         async with self._client.messages.stream(
-            model=self._model,
+            model=model,
             max_tokens=16000,
             system=self._system,
             messages=[
@@ -148,7 +150,7 @@ class ClaudeMenuEngine(MenuEngine):
                         continue
             final = await stream.get_final_message()
 
-        yield ("usage", EngineUsage(model=self._model, input_tokens=final.usage.input_tokens, output_tokens=final.usage.output_tokens))
+        yield ("usage", EngineUsage(model=model, input_tokens=final.usage.input_tokens, output_tokens=final.usage.output_tokens))
 
         if final.stop_reason == "refusal":
             detail = ""

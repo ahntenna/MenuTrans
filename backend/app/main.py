@@ -17,6 +17,8 @@ from .config import settings
 from .db import engine, migrate
 from .events import hub
 from .models import Base
+from . import app_settings
+from .routers import app_settings as settings_router
 from .routers import events, items, orders, photos, rates, sessions, usage
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -56,7 +58,7 @@ app.add_middleware(
 # 인증 없이 열려 있는 것은 /api/health, /api/auth, /api/login, /api/logout 뿐이다.
 app.include_router(auth_router)
 protected = [Depends(require_auth)]
-for r in (sessions, photos, items, orders, events, rates, usage):
+for r in (sessions, photos, items, orders, events, rates, usage, settings_router):
     app.include_router(r.router, dependencies=protected)
 
 
@@ -67,7 +69,7 @@ def health() -> dict:
 
 @app.get("/api/status", dependencies=protected)
 def status() -> dict:
-    return {"ok": True, "engine": settings.menu_engine, "model": settings.claude_model, "subscribers": hub.subscriber_count}
+    return {"ok": True, "engine": settings.menu_engine, "model": app_settings.get_model(), "subscribers": hub.subscriber_count}
 
 
 # ---- 프론트엔드 정적 파일 + SPA 폴백 ----

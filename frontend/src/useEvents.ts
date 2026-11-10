@@ -20,6 +20,7 @@ const EVENT_TYPES = [
   'item.added',
   'item.changed',
   'order.changed',
+  'settings.changed',
 ]
 
 export function useServerEvents(onEvent: (e: ServerEvent) => void): { connected: boolean } {

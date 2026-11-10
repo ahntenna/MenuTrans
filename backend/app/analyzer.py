@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy import select
 
+from . import app_settings
 from .config import settings
 from .db import SessionLocal
 from .engine import ClaudeMenuEngine, MenuEngine
@@ -197,7 +198,7 @@ def build_default_engine() -> MenuEngine:
         log.warning("MENU_ENGINE=fake: 데모 엔진을 사용합니다. 실제 번역은 수행되지 않습니다.")
         return FakeMenuEngine()
     return ClaudeMenuEngine(
-        model=settings.claude_model,
+        model=app_settings.get_model,  # 설정 화면에서 바꾼 모델이 다음 분석부터 적용된다
         target_language=settings.target_language,
         source_languages=settings.source_languages,
         api_key=settings.anthropic_api_key,

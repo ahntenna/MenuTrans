@@ -79,6 +79,24 @@ export interface UsageReport {
   by_model: { model: string; calls: number; cost_usd: number }[]
 }
 
+export interface ModelChoice {
+  id: string
+  label: string
+  hint: string
+  /** 100만 토큰당 USD. 단가를 모르는 모델이면 null */
+  input_usd_per_mtok: number | null
+  output_usd_per_mtok: number | null
+}
+
+export interface AppSettings {
+  /** 지금 분석에 쓰는 모델 */
+  model: string
+  default_model: string
+  models: ModelChoice[]
+  /** "fake" 면 데모 엔진 */
+  engine: string
+}
+
 export interface Rates {
   date: string
   fetched_at: string
@@ -213,4 +231,7 @@ export const api = {
 
   rates: () => request<Rates>('/api/rates'),
   usage: () => request<UsageReport>('/api/usage'),
+
+  settings: () => request<AppSettings>('/api/settings'),
+  updateSettings: (body: { model: string }) => request<AppSettings>('/api/settings', json('PUT', body)),
 }
