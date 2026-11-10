@@ -34,7 +34,6 @@ export default function SessionInfoCard({
       if ((e as Error).name !== 'AbortError') onError(`공유하지 못했습니다: ${(e as Error).message}`)
     }
   }
-  const hasStore = session.store_name || session.address || session.lat !== null || session.map_url
 
   return (
     <div className="card session-info">
@@ -42,11 +41,7 @@ export default function SessionInfoCard({
         <div>
           <h1>{session.name}</h1>
           {session.store_name && session.store_name !== session.name && <div className="store-name">{session.store_name}</div>}
-          {session.visited_at ? (
-            <div className="muted small">방문 {formatVisit(session.visited_at)}</div>
-          ) : (
-            <div className="muted small">방문 일시 미입력</div>
-          )}
+          {session.visited_at && <div className="muted small">방문 {formatVisit(session.visited_at)}</div>}
           {session.address && <div className="small address">{session.address}</div>}
         </div>
         <button className="small-btn" onClick={() => setEditing(true)}>
@@ -57,13 +52,10 @@ export default function SessionInfoCard({
       <div className="row info-actions">
         {mapUrl ? (
           <a className="btn-link" href={mapUrl} target="_blank" rel="noopener noreferrer">
-            <MapPinIcon /> 구글 맵에서 보기
+            <MapPinIcon /> 지도
           </a>
-        ) : (
-          <span className="muted small">가게 정보를 입력하면 지도 링크가 생깁니다.</span>
-        )}
-        {!hasStore && !mapUrl && null}
-        <button className="with-icon" onClick={share}>
+        ) : null}
+        <button onClick={share}>
           <ShareIcon /> 공유
         </button>
         <button onClick={() => setExporting((v) => !v)}>내보내기</button>
@@ -203,7 +195,7 @@ function EditDialog({
           <span>현재 위치</span>
           <div className="row">
             <button type="button" onClick={useCurrentLocation} disabled={locating}>
-              {locating ? '위치 확인 중…' : '📍 현재 위치 저장'}
+              {locating ? '위치 확인 중…' : '현재 위치 저장'}
             </button>
             {coords && (
               <>

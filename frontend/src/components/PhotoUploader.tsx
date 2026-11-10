@@ -1,6 +1,7 @@
 import { ChangeEvent, useRef, useState } from 'react'
 import { api } from '../api'
 import { shrinkImage } from '../resize'
+import { CameraIcon, ImageIcon } from './icons'
 
 const SHRINK_KEY = 'mt_shrink'
 
@@ -51,10 +52,10 @@ export default function PhotoUploader({ sessionId, onError }: { sessionId: strin
         <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden onChange={onFiles} />
         <input ref={libraryRef} type="file" accept="image/*" multiple hidden onChange={onFiles} />
         <button className="primary big" onClick={() => cameraRef.current?.click()} disabled={uploading > 0}>
-          📷 메뉴판 촬영
+          <CameraIcon /> 메뉴판 촬영
         </button>
         <button className="big" onClick={() => libraryRef.current?.click()} disabled={uploading > 0}>
-          🖼 사진첩에서 선택
+          <ImageIcon /> 사진첩에서 선택
         </button>
       </div>
       <div className="uploader-opts">
@@ -63,7 +64,7 @@ export default function PhotoUploader({ sessionId, onError }: { sessionId: strin
           <span>업로드 전 사진 축소</span>
         </label>
         <span className="muted small">
-          {uploading > 0 ? `업로드 중 ${uploading}장…` : shrink ? '빠르게 올라갑니다 (긴 변 2000px)' : '원본 그대로 올립니다 (느릴 수 있음)'}
+          {uploading > 0 ? `업로드 중 ${uploading}장…` : shrink ? '긴 변 2000px 로 줄여 빠르게 올립니다' : ''}
         </span>
       </div>
     </div>

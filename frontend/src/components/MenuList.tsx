@@ -92,11 +92,19 @@ export default function MenuList({
     }
   }
 
-  const reloadButton = session.photos.length > 0 && (
-    <button className="reload" onClick={reload} disabled={reloading || analyzing} title="메뉴판 초기화 후 전체 재분석">
-      <RefreshIcon /> 메뉴판 다시 불러오기
-    </button>
-  )
+  const reloadButton = (withLabel: boolean) =>
+    session.photos.length > 0 && (
+      <button
+        className={withLabel ? '' : 'icon'}
+        onClick={reload}
+        disabled={reloading || analyzing}
+        aria-label="메뉴판 다시 불러오기"
+        title="메뉴판 다시 불러오기 (초기화 후 전체 재분석)"
+      >
+        <RefreshIcon />
+        {withLabel && ' 메뉴판 다시 불러오기'}
+      </button>
+    )
 
   if (groups.length === 0) {
     return (
@@ -104,7 +112,7 @@ export default function MenuList({
         <p className="muted">
           {analyzing ? '번역된 항목이 생기는 대로 여기에 표시됩니다.' : '아직 번역된 메뉴가 없습니다. 메뉴판을 촬영해 주세요.'}
         </p>
-        {!analyzing && reloadButton}
+        {!analyzing && <div className="info-actions">{reloadButton(true)}</div>}
       </>
     )
   }
@@ -125,7 +133,7 @@ export default function MenuList({
     <>
       <div className="menu-tools">
         <input className="search" placeholder="메뉴 검색 (한국어/원문)" value={query} onChange={(e) => setQuery(e.target.value)} />
-        {reloadButton}
+        {reloadButton(false)}
       </div>
       {filtered.map((g) => (
         <section key={g.category} className="menu-group">
