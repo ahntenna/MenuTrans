@@ -1,6 +1,8 @@
 import { createContext, FormEvent, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { api, ApiError, UNAUTHORIZED_EVENT } from './api'
+import { AutoThemeIcon, MoonIcon, SunIcon } from './components/icons'
+import { THEME_LABEL, useTheme } from './theme'
 import { ServerEvent, useServerEvents } from './useEvents'
 
 // 하위 페이지가 서버 이벤트를 구독할 수 있도록 컨텍스트로 전달한다.
@@ -54,6 +56,7 @@ function markReady(v: boolean): void {
 export default function App() {
   const [boot, setBoot] = useState<Boot>('checking')
   const [offline, setOffline] = useState(false)
+  const themeState = useTheme() // 스플래시·로그인 화면에도 테마가 적용되도록 최상위에서 호출
   const timer = useRef<number | null>(null)
 
   const clearTimer = () => {
@@ -144,11 +147,12 @@ export default function App() {
     )
   }
 
-  return <Shell offline={offline} />
+  return <Shell offline={offline} themeState={themeState} />
 }
 
 /** 인증이 끝난 뒤의 본 화면. SSE 는 여기서부터 연결한다. */
-function Shell({ offline }: { offline: boolean }) {
+function Shell({ offline, themeState }: { offline: boolean; themeState: ReturnType<typeof useTheme> }) {
+  const { theme, cycle } = themeState
   const [listeners] = useState(() => new Set<Listener>())
   const { connected } = useServerEvents((e) => listeners.forEach((fn) => fn(e)))
   const subscribe = useCallback(
@@ -174,7 +178,17 @@ function Shell({ offline }: { offline: boolean }) {
         <Link to="/" className="brand">
           MenuTrans
         </Link>
-        <span className={`dot ${connected && !offline ? 'on' : 'off'}`} title={connected ? '실시간 연결됨' : '재연결 중'} />
+        <div className="topbar-right">
+          <span className={`dot ${connected && !offline ? 'on' : 'off'}`} title={connected ? '실시간 연결됨' : '재연결 중'} />
+          <button
+            className="icon theme-toggle"
+            onClick={cycle}
+            aria-label={`테마: ${THEME_LABEL[theme]} (눌러서 변경)`}
+            title={`테마: ${THEME_LABEL[theme]}`}
+          >
+            {theme === 'auto' ? <AutoThemeIcon /> : theme === 'dark' ? <MoonIcon /> : <SunIcon />}
+          </button>
+        </div>
       </header>
       {offline && <div className="offline-bar">오프라인 · 저장된 내용을 표시 중입니다. 변경은 연결 후에 할 수 있습니다.</div>}
       <main className="page">

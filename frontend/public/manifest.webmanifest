@@ -3,8 +3,8 @@
   "short_name": "MenuTrans",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111827",
-  "theme_color": "#1f2937",
+  "background_color": "#e8ebf1",
+  "theme_color": "#e8ebf1",
   "lang": "ko",
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }

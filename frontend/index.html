@@ -3,7 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#1f2937" />
+    <meta name="theme-color" content="#e8ebf1" />
+    <script>
+      // 저장된 테마를 첫 화면이 그려지기 전에 적용 (깜빡임 방지). src/theme.ts 와 같은 키.
+      try {
+        var t = localStorage.getItem('mt_theme')
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t)
+      } catch (e) {}
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="MenuTrans" />

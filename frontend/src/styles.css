@@ -1,43 +1,70 @@
-/* MenuTrans 스타일
- * 원칙: 버튼은 한 가지 높이(--ctl), 아이콘 버튼은 테두리 없는 고스트, 강조색은 주 동작 하나에만.
+/* MenuTrans 스타일 — 뉴모피즘
+ *
+ * 원칙
+ * - 배경과 모든 면이 같은 색(--bg)이고, 높낮이는 그림자 한 쌍(어두운 쪽 --sd, 밝은 쪽 --sl)으로만 표현한다.
+ * - 올라온 면(--raise): 카드, 버튼.  들어간 면(--inset): 입력창, 탭 바탕, 칩, 눌린 버튼.
+ * - 강조색(--accent)은 주 동작 버튼과 진행 표시에만 쓴다.
+ * - 테마: 기본은 시스템 설정을 따르고, <html data-theme="light|dark"> 로 강제할 수 있다 (src/theme.ts).
  */
 
 :root {
-  color-scheme: light dark;
-  --bg: #f5f6f8;
-  --card: #ffffff;
-  --text: #111827;
-  --muted: #6b7280;
-  --border: #e3e6ec;
-  --hover: #f0f2f5;
-  --primary: #111827;
-  --primary-text: #ffffff;
-  --accent: #f59e0b;
-  --danger: #dc2626;
-  --ok: #16a34a;
-  --warn: #d97706;
-  --info-bg: #eff6ff;
-  --info-text: #1d4ed8;
+  color-scheme: light;
+  --bg: #e8ebf1;
+  --sd: #c4c9d4; /* 그림자: 어두운 쪽 */
+  --sl: #ffffff; /* 그림자: 밝은 쪽 */
+  --text: #2b3445;
+  --muted: #6a7488;
+  --accent: #ee8a1e;
+  --accent-text: #ffffff;
+  --danger: #d6453d;
+  --ok: #2f9e5b;
+  --warn: #c9780c;
+  --info: #3b6fd4;
+  --overlay: rgba(40, 48, 64, 0.45);
 
-  --ctl: 2.125rem; /* 버튼·입력 높이 (34px) */
-  --radius: 8px;
-  --radius-lg: 12px;
-  --gap: 0.5rem;
+  --raise: 5px 5px 12px var(--sd), -5px -5px 12px var(--sl);
+  --raise-sm: 3px 3px 7px var(--sd), -3px -3px 7px var(--sl);
+  --inset: inset 2px 2px 5px var(--sd), inset -2px -2px 5px var(--sl);
+  --inset-sm: inset 1px 1px 3px var(--sd), inset -1px -1px 3px var(--sl);
+
+  --ctl: 2.125rem; /* 버튼·입력 높이 (약 32px) */
+  --radius: 10px;
+  --radius-lg: 16px;
+  --gap: 0.6rem;
 }
+
+/* 다크: 시스템이 다크이고 라이트로 강제하지 않았을 때, 또는 다크로 강제했을 때 */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e131d;
-    --card: #161c29;
-    --text: #e8ecf3;
-    --muted: #8b95a7;
-    --border: #252d3d;
-    --hover: #1e2636;
-    --primary: #f5b03a;
-    --primary-text: #16120a;
-    --accent: #f5b03a;
-    --info-bg: #17254a;
-    --info-text: #bcd0ff;
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #22262e;
+    --sd: #16191e;
+    --sl: #2e333d;
+    --text: #e4e8ef;
+    --muted: #8b94a6;
+    --accent: #f5a83a;
+    --accent-text: #1b1408;
+    --danger: #f0736b;
+    --ok: #4cc27e;
+    --warn: #f0a94a;
+    --info: #8fb2ff;
+    --overlay: rgba(0, 0, 0, 0.6);
   }
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #22262e;
+  --sd: #16191e;
+  --sl: #2e333d;
+  --text: #e4e8ef;
+  --muted: #8b94a6;
+  --accent: #f5a83a;
+  --accent-text: #1b1408;
+  --danger: #f0736b;
+  --ok: #4cc27e;
+  --warn: #f0a94a;
+  --info: #8fb2ff;
+  --overlay: rgba(0, 0, 0, 0.6);
 }
 
 /* ---------- 기본 ---------- */
@@ -54,6 +81,9 @@ body {
   line-height: 1.45;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
+}
+body {
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 a {
   color: inherit;
@@ -103,68 +133,78 @@ svg {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(env(safe-area-inset-top) + 0.6rem) 1rem 0.6rem;
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
+  padding: calc(env(safe-area-inset-top) + 0.55rem) 1rem 0.55rem;
+  background: var(--bg);
+  box-shadow: 0 5px 12px -4px var(--sd);
 }
 .brand {
   font-weight: 700;
   letter-spacing: 0.01em;
 }
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
 .dot {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--muted);
+  box-shadow: var(--inset-sm);
 }
 .dot.on {
-  background: #22c55e;
+  background: #33c26f;
+  box-shadow: 0 0 6px rgba(51, 194, 111, 0.7);
 }
 .dot.off {
-  background: #ef4444;
+  background: #ee5a52;
+  box-shadow: 0 0 6px rgba(238, 90, 82, 0.6);
 }
 .offline-bar {
-  background: var(--warn);
-  color: #16120a;
+  color: var(--warn);
   font-size: 0.8rem;
-  padding: 0.35rem 1rem;
+  padding: 0.4rem 1rem;
   text-align: center;
+  box-shadow: var(--inset);
 }
 .page {
   max-width: 720px;
   margin: 0 auto;
-  padding: 0.85rem 0.85rem calc(env(safe-area-inset-bottom) + 2rem);
+  padding: 1.1rem 1rem calc(env(safe-area-inset-bottom) + 2rem);
 }
 
-/* ---------- 입력 ---------- */
+/* ---------- 입력: 들어간 면 ---------- */
 input,
 textarea {
   width: 100%;
   min-height: var(--ctl);
-  padding: 0.35rem 0.65rem;
-  border: 1px solid var(--border);
+  padding: 0.35rem 0.75rem;
+  border: none;
   border-radius: var(--radius);
   background: var(--bg);
   color: var(--text);
-}
-input:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--accent);
+  box-shadow: var(--inset);
 }
 input:not([type='checkbox']) {
   height: var(--ctl);
 }
+input:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: var(--inset), 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent);
+}
 textarea {
   resize: vertical;
+  padding-top: 0.5rem;
 }
 input::placeholder,
 textarea::placeholder {
   color: var(--muted);
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
-/* ---------- 버튼 ---------- */
+/* ---------- 버튼: 올라온 면, 누르면 들어감 ---------- */
 button,
 .btn-link,
 .chip-link {
@@ -173,129 +213,134 @@ button,
   justify-content: center;
   gap: 0.35rem;
   min-height: var(--ctl);
-  padding: 0 0.7rem;
-  border: 1px solid var(--border);
+  padding: 0 0.8rem;
+  border: none;
   border-radius: var(--radius);
-  background: var(--card);
+  background: var(--bg);
   color: var(--text);
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
+  box-shadow: var(--raise-sm);
+  transition: box-shadow 0.12s ease, transform 0.12s ease;
+}
+button:not(:disabled):active,
+.btn-link:active,
+.chip-link:active {
+  box-shadow: var(--inset);
 }
 button:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: default;
+  box-shadow: var(--inset-sm);
 }
 button.primary {
-  background: var(--primary);
-  color: var(--primary-text);
-  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-text);
 }
+button.primary:not(:disabled):active {
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.28);
+}
+button.primary:disabled {
+  box-shadow: none;
+}
+/* 이미 주문한 메뉴: 눌려 있는 상태로 표현 */
 button.ordered {
-  background: transparent;
   color: var(--accent);
-  border-color: var(--accent);
+  box-shadow: var(--inset);
 }
 button.danger {
   color: var(--danger);
 }
 button.small-btn {
   min-height: 1.75rem;
-  padding: 0 0.55rem;
+  padding: 0 0.6rem;
   font-size: 0.8rem;
+  border-radius: 8px;
 }
-/* 아이콘 전용: 테두리 없는 정사각형 */
+/* 아이콘 전용: 둥근 버튼 */
 button.icon {
   width: var(--ctl);
   padding: 0;
-  border-color: transparent;
-  background: transparent;
+  border-radius: 50%;
   color: var(--muted);
 }
 button.icon.danger {
   color: var(--danger);
 }
-@media (hover: hover) {
-  button:not(:disabled):hover {
-    filter: brightness(0.97);
-  }
-  button.icon:not(:disabled):hover {
-    background: var(--hover);
-    filter: none;
-  }
-}
 
 /* ---------- 카드 / 목록 ---------- */
 a.card {
   display: block;
+  transition: box-shadow 0.12s ease;
+}
+a.card:active {
+  box-shadow: var(--inset);
 }
 .card {
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--bg);
   border-radius: var(--radius-lg);
-  padding: 0.75rem 0.85rem;
+  padding: 0.85rem 0.95rem;
+  box-shadow: var(--raise);
 }
 .list {
   list-style: none;
   padding: 0;
-  margin: 0.6rem 0 0;
+  margin: 0.9rem 0 0;
   display: flex;
   flex-direction: column;
-  gap: var(--gap);
+  gap: 0.95rem;
 }
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: 0.4rem;
 }
 .chip {
   font-size: 0.74rem;
-  padding: 0.1rem 0.45rem;
+  padding: 0.15rem 0.55rem;
   border-radius: 999px;
-  background: var(--bg);
-  border: 1px solid var(--border);
   color: var(--muted);
+  box-shadow: var(--inset-sm);
 }
 .chip.warn {
   color: var(--warn);
-  border-color: var(--warn);
 }
 .chip-link {
   min-height: 1.75rem;
-  padding: 0 0.6rem;
+  padding: 0 0.7rem;
   border-radius: 999px;
   font-size: 0.8rem;
 }
 .badge {
   display: inline-block;
   min-width: 1.25em;
-  padding: 0.1em 0.35em;
+  padding: 0.12em 0.38em;
   border-radius: 999px;
   background: var(--accent);
-  color: #16120a;
+  color: var(--accent-text);
   font-size: 0.7rem;
   font-weight: 700;
   text-align: center;
   line-height: 1.2;
 }
 
-/* ---------- 알림 ---------- */
+/* ---------- 알림: 들어간 면 + 색 글자 ---------- */
 .error,
 .info {
-  padding: 0.5rem 0.7rem;
+  padding: 0.55rem 0.8rem;
   border-radius: var(--radius);
-  margin-top: 0.6rem;
+  margin-top: 0.8rem;
   font-size: 0.88rem;
+  box-shadow: var(--inset);
 }
 .error {
   color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 .info {
-  color: var(--info-text);
-  background: var(--info-bg);
+  color: var(--info);
 }
 
 /* ---------- 세션 목록 ---------- */
@@ -303,7 +348,7 @@ input.search {
   margin: 0;
 }
 input.session-search {
-  margin-top: 0.6rem;
+  margin-top: 0.95rem;
 }
 .session .session-head {
   display: flex;
@@ -319,16 +364,17 @@ input.session-search {
   display: flex;
   gap: 0.6rem;
   flex-wrap: wrap;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.45rem;
 }
 .session p {
-  margin-top: 0.35rem;
+  margin-top: 0.45rem;
 }
 .usage-foot {
-  margin-top: 1.25rem;
-  padding-top: 0.7rem;
-  border-top: 1px solid var(--border);
+  margin-top: 1.4rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-lg);
   line-height: 1.6;
+  box-shadow: var(--inset);
 }
 
 /* ---------- 세션 정보 카드 ---------- */
@@ -350,15 +396,13 @@ input.session-search {
   margin-top: 0.15rem;
 }
 .info-actions {
-  margin-top: 0.6rem;
+  margin-top: 0.75rem;
 }
 .export-row {
-  margin-top: 0.45rem;
+  margin-top: 0.65rem;
 }
 .cost-line {
-  margin-top: 0.5rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--border);
+  margin-top: 0.75rem;
 }
 .session-info .note {
   margin-top: 0.5rem;
@@ -367,60 +411,81 @@ input.session-search {
 
 /* ---------- 업로드 ---------- */
 .uploader-wrap {
-  margin: 0.6rem 0 0;
+  margin: 1rem 0 0;
 }
 .uploader {
   display: flex;
-  gap: var(--gap);
+  gap: 0.8rem;
 }
 button.big {
   flex: 1;
-  min-height: 2.5rem;
+  min-height: 2.6rem;
   font-size: 0.92rem;
+  border-radius: 12px;
+  box-shadow: var(--raise);
 }
 .uploader-opts {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   flex-wrap: wrap;
-  margin-top: 0.4rem;
+  margin-top: 0.7rem;
 }
 label.check {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.45rem;
   font-size: 0.84rem;
   cursor: pointer;
 }
+/* 체크박스: 들어간 칸, 선택하면 강조색으로 채움 */
 label.check input {
-  width: 1rem;
-  height: 1rem;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.15rem;
+  height: 1.15rem;
   min-height: 0;
   padding: 0;
-  accent-color: var(--accent);
+  border-radius: 6px;
+  box-shadow: var(--inset);
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+}
+label.check input::after {
+  content: '';
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 3px;
+  background: var(--accent);
+  transform: scale(0);
+  transition: transform 0.12s ease;
+}
+label.check input:checked::after {
+  transform: scale(1);
 }
 
 /* ---------- 진행률 ---------- */
 .progress-list {
   display: flex;
   flex-direction: column;
-  gap: var(--gap);
-  margin-top: 0.6rem;
+  gap: 0.9rem;
+  margin-top: 1rem;
 }
 .progress-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: var(--gap);
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.55rem;
   font-size: 0.88rem;
 }
 .bar {
   position: relative;
-  height: 6px;
+  height: 10px;
   border-radius: 999px;
-  background: var(--border);
   overflow: hidden;
+  box-shadow: var(--inset);
 }
 .bar-fill {
   height: 100%;
@@ -442,34 +507,37 @@ label.check input {
   }
 }
 
-/* ---------- 탭 ---------- */
+/* ---------- 탭: 들어간 바탕 위에 선택된 탭만 올라옴 ---------- */
 .tabs {
   display: flex;
-  gap: 0.25rem;
-  margin: 0.9rem 0 0.6rem;
-  border-bottom: 1px solid var(--border);
+  gap: 0.3rem;
+  margin: 1.1rem 0 0.9rem;
+  padding: 0.3rem;
+  border-radius: 13px;
+  box-shadow: var(--inset);
 }
 .tabs button {
-  min-height: 2.25rem;
-  padding: 0 0.7rem;
-  border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
+  flex: 1;
+  min-height: 2rem;
+  padding: 0 0.5rem;
+  border-radius: 10px;
   background: transparent;
   color: var(--muted);
-  font-size: 0.92rem;
-  margin-bottom: -1px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: none;
 }
 .tabs button.active {
+  background: var(--bg);
   color: var(--text);
-  border-bottom-color: var(--accent);
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: var(--raise-sm);
 }
 
 /* ---------- 메뉴 탭 ---------- */
 .menu-tools {
   display: flex;
-  gap: var(--gap);
+  gap: 0.7rem;
   align-items: center;
 }
 .menu-tools input.search {
@@ -478,10 +546,13 @@ label.check input {
 }
 .menu-group h2 {
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--muted);
-  letter-spacing: 0.03em;
-  margin: 1rem 0 0.1rem 0.1rem;
+  letter-spacing: 0.04em;
+  margin: 1.2rem 0 0 0.2rem;
+}
+.menu-group .list {
+  margin-top: 0.7rem;
 }
 .menu-item {
   animation: fadein 0.35s ease-out;
@@ -516,7 +587,7 @@ label.check input {
   flex-direction: column;
   align-items: flex-end;
   white-space: nowrap;
-  font-weight: 600;
+  font-weight: 700;
 }
 .krw {
   color: var(--muted);
@@ -527,27 +598,28 @@ label.check input {
 .desc {
   margin-top: 0.35rem;
   font-size: 0.88rem;
-  opacity: 0.85;
+  opacity: 0.88;
 }
 .menu-tags {
-  margin-top: 0.45rem;
+  margin-top: 0.55rem;
 }
 .menu-foot {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: var(--gap);
-  margin-top: 0.4rem;
+  margin-top: 0.7rem;
 }
 .item-actions {
   display: flex;
-  gap: 0.1rem;
-  margin-left: -0.45rem; /* 고스트 아이콘의 시각적 여백 보정 */
+  gap: 0.55rem;
 }
 
 /* ---------- 주문 탭 ---------- */
 .staff-btn {
   width: 100%;
+  min-height: 2.4rem;
+  border-radius: 12px;
 }
 .order-main {
   display: flex;
@@ -566,31 +638,32 @@ label.check input {
 }
 .order-sub {
   font-size: 0.86rem;
-  opacity: 0.85;
+  opacity: 0.88;
 }
 .qty {
   display: flex;
   align-items: center;
-  gap: 0.15rem;
+  gap: 0.35rem;
 }
 .qty button {
   width: var(--ctl);
   padding: 0;
+  border-radius: 50%;
   font-size: 1.05rem;
 }
 .qty span {
-  min-width: 1.6rem;
+  min-width: 1.5rem;
   text-align: center;
-  font-weight: 600;
+  font-weight: 700;
 }
 .qty button.icon {
-  margin-left: 0.25rem;
+  margin-left: 0.35rem;
 }
 .total {
   text-align: right;
   font-weight: 700;
   font-size: 1rem;
-  margin: 0.7rem 0.1rem;
+  margin: 1rem 0.2rem;
 }
 .total .krw {
   font-size: 0.88rem;
@@ -600,7 +673,7 @@ label.check input {
   font-weight: 400;
 }
 
-/* 직원에게 보여주기 (항상 밝은 배경) */
+/* 직원에게 보여주기 (테마와 무관하게 항상 흰 배경, 그림자 없음: 가독성 우선) */
 .staff {
   position: fixed;
   inset: 0;
@@ -636,12 +709,13 @@ label.check input {
   font-weight: 600;
   overflow-wrap: anywhere;
 }
-.staff-close {
+.staff-close,
+.staff-close:not(:disabled):active {
   margin-top: 0.75rem;
   min-height: 2.75rem;
   background: #111827;
   color: #ffffff;
-  border-color: transparent;
+  box-shadow: none;
 }
 
 /* ---------- 사진 탭 ---------- */
@@ -650,31 +724,35 @@ label.check input {
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
-  gap: var(--gap);
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.9rem;
 }
 .photo {
-  border-radius: var(--radius);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: var(--card);
+  padding: 0.3rem;
+  border-radius: 14px;
+  background: var(--bg);
   cursor: pointer;
+  box-shadow: var(--raise);
+}
+.photo:active {
+  box-shadow: var(--inset);
 }
 .photo img {
   width: 100%;
   aspect-ratio: 3 / 4;
   object-fit: cover;
   display: block;
+  border-radius: 10px;
 }
 .photo-meta {
   display: flex;
   justify-content: space-between;
-  padding: 0.25rem 0.45rem;
+  padding: 0.3rem 0.3rem 0.1rem;
   font-size: 0.76rem;
 }
 .status {
   font-size: 0.76rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 .status.pending,
 .status.processing {
@@ -703,17 +781,19 @@ label.check input {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.85rem;
-  background: rgba(0, 0, 0, 0.6);
+  padding: 1rem;
+  background: var(--overlay);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 .modal-body {
   width: 100%;
   max-width: 640px;
   max-height: 94vh;
   overflow: auto;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--bg);
+  border-radius: 18px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
 }
 .modal-body > img {
   width: 100%;
@@ -723,10 +803,10 @@ label.check input {
   background: #000;
 }
 .modal-info {
-  padding: 0.7rem 0.85rem 0.85rem;
+  padding: 0.85rem 1rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 .modal-info p {
   display: flex;
@@ -739,10 +819,10 @@ label.check input {
   margin-top: 0;
 }
 .form {
-  padding: 0.9rem;
+  padding: 1.1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.8rem;
 }
 .form h2 {
   font-size: 1.05rem;
@@ -751,7 +831,7 @@ label.check input {
 .form .field {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
   font-size: 0.82rem;
   color: var(--muted);
 }
@@ -763,7 +843,7 @@ label.check input {
   color: var(--danger);
 }
 .form-actions {
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
 }
 
 /* 사진 속 위치 표시 */
@@ -776,7 +856,7 @@ label.check input {
   justify-content: space-between;
   align-items: flex-start;
   gap: 0.75rem;
-  padding: 0.7rem 0.85rem;
+  padding: 0.85rem 1rem;
 }
 .locate-scroll {
   overflow: auto;
@@ -799,7 +879,7 @@ label.check input {
   pointer-events: none;
 }
 .locate-note {
-  padding: 0.55rem 0.85rem 0.7rem;
+  padding: 0.6rem 1rem 0.8rem;
 }
 
 /* ---------- 스플래시 / 로그인 ---------- */
@@ -810,15 +890,18 @@ label.check input {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.7rem;
+  gap: 0.85rem;
   padding: 1.5rem;
   background: var(--bg);
   text-align: center;
 }
 .splash-logo {
-  width: 72px;
-  height: 72px;
-  border-radius: 18px;
+  width: 76px;
+  height: 76px;
+  padding: 6px;
+  border-radius: 22px;
+  box-shadow: var(--raise);
+  margin-bottom: 0.3rem;
 }
 .splash-title {
   font-size: 1.25rem;
@@ -836,12 +919,13 @@ label.check input {
   font-size: 0.85rem;
 }
 .spinner {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   margin-top: 0.25rem;
-  border: 3px solid var(--border);
+  border: 3px solid transparent;
   border-top-color: var(--accent);
   border-radius: 50%;
+  box-shadow: var(--inset-sm);
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin {
@@ -854,4 +938,11 @@ label.check input {
   text-align: center;
   font-size: 1.1rem;
   letter-spacing: 0.2em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
