@@ -39,7 +39,14 @@ _EXTRA_COLUMNS: dict[str, dict[str, str]] = {
         "original_name": "VARCHAR(300) NOT NULL DEFAULT ''",
         "translated_name": "VARCHAR(300) NOT NULL DEFAULT ''",
     },
+    "menu_items": {
+        "bbox": "JSON",
+    },
     "photos": {
+        "engine_model": "VARCHAR(100) NOT NULL DEFAULT ''",
+        "input_tokens": "INTEGER NOT NULL DEFAULT 0",
+        "output_tokens": "INTEGER NOT NULL DEFAULT 0",
+        "cost_usd": "FLOAT",
         "progress_total": "INTEGER NOT NULL DEFAULT 0",
         "started_at": "DATETIME",
     },

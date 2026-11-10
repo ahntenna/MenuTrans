@@ -664,3 +664,187 @@ button.reload svg {
   opacity: 0.85;
   margin: 0.1rem 0;
 }
+
+/* 로그인 / 오프라인 표시 */
+.login-input {
+  max-width: 14rem;
+  text-align: center;
+  font-size: 1.2rem;
+  letter-spacing: 0.2em;
+}
+.offline-bar {
+  background: var(--warn);
+  color: #111827;
+  font-size: 0.85rem;
+  padding: 0.4rem 1rem;
+  text-align: center;
+}
+
+/* 업로드 옵션 */
+.uploader-wrap {
+  margin: 0.5rem 0;
+}
+.uploader-wrap .uploader {
+  margin: 0;
+}
+.uploader-opts {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+label.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+label.check input {
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+/* 원화 환산 */
+.krw {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 400;
+  white-space: nowrap;
+}
+.menu-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.total .krw {
+  font-size: 0.95rem;
+}
+.rate-note {
+  display: block;
+  font-weight: 400;
+}
+
+/* 직원에게 보여주기 */
+.staff-btn {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1.05rem;
+  margin-top: 0.25rem;
+}
+.staff {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: #000000;
+  padding: calc(env(safe-area-inset-top) + 1.25rem) 1.25rem calc(env(safe-area-inset-bottom) + 1rem);
+}
+.staff ul {
+  flex: 1;
+  overflow: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.staff li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid #d1d5db;
+  font-size: clamp(1.5rem, 6.5vw, 2.4rem);
+  line-height: 1.25;
+}
+.staff-qty {
+  font-weight: 800;
+  white-space: nowrap;
+  min-width: 2.2em;
+}
+.staff-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.staff-close {
+  margin-top: 0.75rem;
+  padding: 0.9rem;
+  font-size: 1.05rem;
+  background: #111827;
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* 사진 속 위치 표시 */
+.locate {
+  display: flex;
+  flex-direction: column;
+}
+.locate-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+.locate-scroll {
+  overflow: auto;
+  max-height: 68vh;
+  background: #000;
+}
+.locate-stage {
+  position: relative;
+}
+.modal-body .locate-stage img {
+  width: 100%;
+  max-height: none;
+  display: block;
+}
+.locate-box {
+  position: absolute;
+  border: 3px solid var(--accent);
+  border-radius: 6px;
+  background: rgba(245, 158, 11, 0.18);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+.locate-note {
+  margin: 0;
+  padding: 0.6rem 1rem 0.8rem;
+}
+
+/* 세션 검색 / 내보내기 / 비용 */
+input.session-search {
+  margin: 0.75rem 0 0;
+}
+button.with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+button.with-icon svg {
+  display: block;
+}
+.export-row {
+  margin-top: 0.5rem;
+}
+.chip-link {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.88rem;
+  background: var(--bg);
+}
+.cost-line {
+  margin-top: 0.5rem;
+}
+.usage-foot {
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  line-height: 1.6;
+}

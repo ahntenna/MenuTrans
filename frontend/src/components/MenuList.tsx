@@ -1,7 +1,9 @@
 import { FormEvent, useMemo, useState } from 'react'
 import { api, MenuItem, SessionDetail } from '../api'
 import { formatMoney } from '../format'
-import { PencilIcon, RefreshIcon, TrashIcon } from './icons'
+import { formatKrw, toKrw, useRates } from '../rates'
+import { ImageIcon, PencilIcon, RefreshIcon, TrashIcon } from './icons'
+import PhotoLocateDialog from './PhotoLocateDialog'
 
 const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim()
 
@@ -38,6 +40,8 @@ export default function MenuList({
   const [adding, setAdding] = useState<string | null>(null)
   const [editing, setEditing] = useState<MenuItem | null>(null)
   const [reloading, setReloading] = useState(false)
+  const [locating, setLocating] = useState<MenuItem | null>(null)
+  const rates = useRates()
 
   const analyzing = session.photos.some((p) => p.status === 'pending' || p.status === 'processing')
 
@@ -129,6 +133,7 @@ export default function MenuList({
           <ul className="list">
             {g.items.map((it) => {
               const qty = qtyOf(it)
+              const krw = formatKrw(toKrw(it.price_value, currency, rates))
               return (
                 <li key={it.id} className="card menu-item">
                   <div className="menu-main">
@@ -138,6 +143,7 @@ export default function MenuList({
                     </div>
                     <div className="menu-price">
                       <span>{it.price_text || formatMoney(it.price_value, currency)}</span>
+                      {krw && <span className="krw">{krw}</span>}
                     </div>
                   </div>
                   {it.description && <p className="desc">{it.description}</p>}
@@ -152,6 +158,9 @@ export default function MenuList({
                   )}
                   <div className="menu-foot">
                     <div className="item-actions">
+                      <button className="icon" onClick={() => setLocating(it)} aria-label="사진에서 위치 보기" title="사진에서 위치 보기">
+                        <ImageIcon />
+                      </button>
                       <button className="icon" onClick={() => setEditing(it)} aria-label="메뉴 수정" title="메뉴 수정">
                         <PencilIcon />
                       </button>
@@ -170,6 +179,7 @@ export default function MenuList({
         </section>
       ))}
 
+      {locating && <PhotoLocateDialog item={locating} onClose={() => setLocating(null)} />}
       {editing && <EditItemDialog item={editing} onClose={() => setEditing(null)} onError={onError} />}
     </>
   )

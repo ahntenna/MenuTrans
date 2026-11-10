@@ -1,29 +1,47 @@
-import { FormEvent, useCallback, useEffect, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api, SessionSummary } from '../api'
+import { api, SessionSummary, UsageReport } from '../api'
 import { useEventBus } from '../App'
 import { formatDate, formatVisit } from '../format'
+import { prefetchSessions } from '../offline'
+import { formatKrw, formatUsd, toKrw, useRates } from '../rates'
 
 export default function SessionListPage() {
   const [sessions, setSessions] = useState<SessionSummary[] | null>(null)
+  const [usage, setUsage] = useState<UsageReport | null>(null)
   const [error, setError] = useState('')
   const [name, setName] = useState('')
+  const [query, setQuery] = useState('')
   const [busy, setBusy] = useState(false)
-  const { subscribe } = useEventBus()
+  const { subscribe, offline } = useEventBus()
+  const rates = useRates()
+  const queryRef = useRef('')
 
   const load = useCallback(async () => {
+    const q = queryRef.current
     try {
-      setSessions(await api.listSessions())
+      const list = await api.listSessions(q)
+      if (q !== queryRef.current) return // 그사이 검색어가 바뀜
+      setSessions(list)
       setError('')
+      if (!q) void prefetchSessions(list) // 오프라인 조회용으로 세션 전체를 미리 받아 둔다
     } catch (e) {
       setError((e as Error).message)
     }
+    api.usage().then(setUsage, () => undefined)
   }, [])
 
   useEffect(() => {
     void load()
     return subscribe(() => void load())
   }, [load, subscribe])
+
+  // 검색어 입력은 잠깐 모았다가 조회
+  useEffect(() => {
+    queryRef.current = query.trim()
+    const t = window.setTimeout(() => void load(), 250)
+    return () => window.clearTimeout(t)
+  }, [query, load])
 
   const onCreate = async (ev: FormEvent) => {
     ev.preventDefault()
@@ -39,6 +57,8 @@ export default function SessionListPage() {
     }
   }
 
+  const searching = query.trim().length > 0
+
   return (
     <>
       <form className="card row" onSubmit={onCreate}>
@@ -47,15 +67,26 @@ export default function SessionListPage() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={200}
+          disabled={offline}
         />
-        <button type="submit" disabled={busy || !name.trim()}>
+        <button type="submit" disabled={busy || offline || !name.trim()}>
           만들기
         </button>
       </form>
 
+      <input
+        className="search session-search"
+        type="search"
+        placeholder="세션 검색 (식당, 주소, 메뉴 이름)"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+
       {error && <p className="error">{error}</p>}
-      {sessions === null && <p className="muted">불러오는 중…</p>}
-      {sessions && sessions.length === 0 && <p className="muted">아직 세션이 없습니다. 식당 이름을 입력해 시작하세요.</p>}
+      {sessions === null && !error && <p className="muted">불러오는 중…</p>}
+      {sessions && sessions.length === 0 && (
+        <p className="muted">{searching ? '검색 결과가 없습니다.' : '아직 세션이 없습니다. 식당 이름을 입력해 시작하세요.'}</p>
+      )}
 
       <ul className="list">
         {sessions?.map((s) => (
@@ -82,6 +113,19 @@ export default function SessionListPage() {
           </li>
         ))}
       </ul>
+
+      {usage && usage.total.calls > 0 && (
+        <div className="usage-foot muted small">
+          <div>
+            번역 비용 누적 <strong>{formatUsd(usage.total.cost_usd)}</strong> {formatKrw(toKrw(usage.total.cost_usd, 'USD', rates))} · 분석{' '}
+            {usage.total.calls}회
+          </div>
+          <div>
+            이번 달 {formatUsd(usage.this_month.cost_usd)} {formatKrw(toKrw(usage.this_month.cost_usd, 'USD', rates))} · {usage.this_month.calls}회
+          </div>
+          <div>토큰 단가 기준 추정치이며 실제 청구액과 다를 수 있습니다.</div>
+        </div>
+      )}
     </>
   )
 }

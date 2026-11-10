@@ -5,6 +5,9 @@ import App from './App'
 import SessionListPage from './pages/SessionListPage'
 import SessionDetailPage from './pages/SessionDetailPage'
 import './styles.css'
+import { registerServiceWorker } from './offline'
+
+registerServiceWorker()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

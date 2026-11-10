@@ -12,6 +12,8 @@ export interface MenuItem {
   price_text: string
   price_value: number | null
   tags: string[]
+  /** 사진 속 위치 [x0, y0, x1, y1], 0~1000 정규화 (대략적인 값). 없으면 null */
+  bbox: number[] | null
 }
 
 export interface MenuItemPatch {
@@ -38,6 +40,11 @@ export interface Photo {
   restaurant_hint: string
   /** 모델이 먼저 보고한 예상 항목 수 (완료 후에는 실제 개수). 0 이면 아직 모름 */
   progress_total: number
+  /** 마지막 분석의 사용량 */
+  engine_model: string
+  input_tokens: number
+  output_tokens: number
+  cost_usd: number | null
   created_at: string
   started_at: string | null
   analyzed_at: string | null
@@ -57,6 +64,28 @@ export interface Order {
   quantity: number
   note: string
   created_at: string
+}
+
+export interface UsageSummary {
+  calls: number
+  input_tokens: number
+  output_tokens: number
+  cost_usd: number
+}
+
+export interface UsageReport {
+  total: UsageSummary
+  this_month: UsageSummary
+  by_model: { model: string; calls: number; cost_usd: number }[]
+}
+
+export interface Rates {
+  date: string
+  fetched_at: string
+  source: string
+  stale: boolean
+  /** 외화 1단위당 원화 */
+  krw_per_unit: Record<string, number>
 }
 
 export interface SessionBase {
@@ -85,6 +114,7 @@ export interface SessionSummary extends SessionBase {
 export interface SessionDetail extends SessionBase {
   photos: Photo[]
   orders: Order[]
+  usage: UsageSummary
 }
 
 export interface SessionPatch {
@@ -108,13 +138,23 @@ export class ApiError extends Error {
   }
 }
 
+/** 인증이 풀렸을 때(401) App 이 로그인 화면으로 돌아가도록 알리는 이벤트 이름 */
+export const UNAUTHORIZED_EVENT = 'mt:unauthorized'
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init)
+  let res: Response
+  try {
+    res = await fetch(url, init)
+  } catch {
+    throw new ApiError(0, '서버에 연결할 수 없습니다. (오프라인)')
+  }
   if (!res.ok) {
+    if (res.status === 401 && !url.startsWith('/api/login')) window.dispatchEvent(new Event(UNAUTHORIZED_EVENT))
     let detail = res.statusText
     try {
       const body = await res.json()
       if (typeof body.detail === 'string') detail = body.detail
+      else if (Array.isArray(body.detail) && body.detail[0]?.msg) detail = String(body.detail[0].msg).replace(/^Value error, /, '')
     } catch {
       /* ignore */
     }
@@ -131,13 +171,23 @@ const json = (method: string, body: unknown): RequestInit => ({
 })
 
 export const api = {
-  listSessions: () => request<SessionSummary[]>('/api/sessions'),
+  authStatus: () => request<{ required: boolean; authenticated: boolean }>('/api/auth', { cache: 'no-store' }),
+  login: (password: string) => request<{ ok: boolean }>('/api/login', json('POST', { password })),
+  logout: () => request<{ ok: boolean }>('/api/logout', { method: 'POST' }),
+
+  listSessions: (q = '') => request<SessionSummary[]>(q ? `/api/sessions?q=${encodeURIComponent(q)}` : '/api/sessions'),
   createSession: (name: string, note = '') => request<SessionDetail>('/api/sessions', json('POST', { name, note })),
   getSession: (id: string) => request<SessionDetail>(`/api/sessions/${id}`),
   updateSession: (id: string, patch: SessionPatch) => request<SessionDetail>(`/api/sessions/${id}`, json('PATCH', patch)),
   deleteSession: (id: string) => request<void>(`/api/sessions/${id}`, { method: 'DELETE' }),
   /** 메뉴판 다시 불러오기: 추출된 메뉴를 지우고 모든 사진을 다시 분석 */
   reanalyzeSession: (id: string) => request<SessionDetail>(`/api/sessions/${id}/reanalyze`, { method: 'POST' }),
+  exportUrl: (id: string, format: 'md' | 'json') => `/api/sessions/${id}/export?format=${format}`,
+  exportText: async (id: string) => {
+    const res = await fetch(`/api/sessions/${id}/export?format=md`)
+    if (!res.ok) throw new ApiError(res.status, '내보내기에 실패했습니다.')
+    return res.text()
+  },
 
   updateMenuItem: (itemId: string, patch: MenuItemPatch) =>
     request<MenuItem>(`/api/menu-items/${itemId}`, json('PATCH', patch)),
@@ -160,4 +210,7 @@ export const api = {
   updateOrder: (orderId: string, patch: { quantity?: number; note?: string }) =>
     request<Order>(`/api/orders/${orderId}`, json('PATCH', patch)),
   deleteOrder: (orderId: string) => request<void>(`/api/orders/${orderId}`, { method: 'DELETE' }),
+
+  rates: () => request<Rates>('/api/rates'),
+  usage: () => request<UsageReport>('/api/usage'),
 }

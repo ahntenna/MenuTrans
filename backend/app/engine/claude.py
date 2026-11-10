@@ -12,7 +12,7 @@ from collections.abc import AsyncIterator
 
 import anthropic
 
-from .base import MENU_SCHEMA, EngineEvent, EngineMeta, ExtractedItem, MenuEngine, MenuExtraction
+from .base import MENU_SCHEMA, EngineEvent, EngineMeta, EngineUsage, ExtractedItem, MenuEngine, MenuExtraction
 
 
 class EngineRefused(Exception):
@@ -110,6 +110,7 @@ class ClaudeMenuEngine(MenuEngine):
             "transliteration in parentheses when helpful (e.g. '소고기 타르타르 (타르타르 드 뵈프)').\n"
             "- description: one short Korean sentence a traveler needs to decide whether to order.\n"
             "- Preserve the menu's reading order and put section headings (translated to Korean) in category.\n"
+            "- box: give each item's approximate location in the image as [x0, y0, x1, y1] on a 0-1000 scale.\n"
             "- Prices: copy exactly into price_text; parse the number into price_value.\n"
             "- If part of the image is cut off or unreadable, still return what you can and mention it in notes.\n"
             "- If the image is not a menu at all, set is_menu=false, item_count_estimate=0 and return no items."
@@ -146,6 +147,8 @@ class ClaudeMenuEngine(MenuEngine):
                     except Exception:  # noqa: BLE001  잘못된 항목 하나는 건너뜀
                         continue
             final = await stream.get_final_message()
+
+        yield ("usage", EngineUsage(model=self._model, input_tokens=final.usage.input_tokens, output_tokens=final.usage.output_tokens))
 
         if final.stop_reason == "refusal":
             detail = ""

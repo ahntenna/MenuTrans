@@ -68,6 +68,11 @@ class Photo(Base):
     restaurant_hint: Mapped[str] = mapped_column(String(200), default="")
     # 진행률: 모델이 먼저 보고한 예상 항목 수 (완료 시 실제 개수로 갱신)
     progress_total: Mapped[int] = mapped_column(Integer, default=0)
+    # 마지막 분석의 사용량/비용
+    engine_model: Mapped[str] = mapped_column(String(100), default="")
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -94,6 +99,8 @@ class MenuItem(Base):
     price_text: Mapped[str] = mapped_column(String(100), default="")
     price_value: Mapped[float | None] = mapped_column(Float, nullable=True)
     tags: Mapped[list] = mapped_column(JSON, default=list)
+    # 사진 속 위치 [x0, y0, x1, y1] (0~1000 으로 정규화, 대략적인 값). 없으면 None
+    bbox: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
     photo: Mapped[Photo] = relationship(back_populates="items")
     orders: Mapped[list[Order]] = relationship(back_populates="menu_item")
@@ -121,3 +128,18 @@ class Order(Base):
 
     session: Mapped[RestaurantSession] = relationship(back_populates="orders")
     menu_item: Mapped[MenuItem | None] = relationship(back_populates="orders")
+
+
+class UsageLog(Base):
+    """번역 API 호출 1회의 사용량. 세션/사진이 삭제돼도 비용 기록은 남도록 FK 를 걸지 않는다."""
+
+    __tablename__ = "usage_log"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    session_id: Mapped[str] = mapped_column(String(32), index=True)
+    photo_id: Mapped[str] = mapped_column(String(32), index=True)
+    model: Mapped[str] = mapped_column(String(100))
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    cost_usd: Mapped[float | None] = mapped_column(Float, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)

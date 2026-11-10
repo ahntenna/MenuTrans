@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     # 데이터 저장 루트 (SQLite + 사진). Docker 에서는 /data 볼륨.
     data_dir: Path = Path("./data")
 
+    # 공용 비밀번호. 비어 있으면 인증 없이 누구나 접근 가능.
+    app_password: str | None = None
+
     # 분석 엔진: "claude" (기본) | "fake" (API 키 없이 UI 시험용 데모 데이터)
     menu_engine: str = "claude"
 

@@ -5,17 +5,19 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .analyzer import analyzer
+from .auth import auth_enabled, require_auth
+from .auth import router as auth_router
 from .config import settings
 from .db import engine, migrate
 from .events import hub
 from .models import Base
-from .routers import events, items, orders, photos, sessions
+from .routers import events, items, orders, photos, rates, sessions, usage
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("menutrans")
@@ -33,6 +35,8 @@ async def lifespan(_: FastAPI):
     analyzer.bind_loop(asyncio.get_running_loop())
     if not settings.anthropic_api_key:
         log.warning("ANTHROPIC_API_KEY 가 설정되지 않았습니다. SDK 의 다른 자격증명 경로가 없으면 분석이 실패합니다.")
+    if not auth_enabled():
+        log.warning("APP_PASSWORD 가 설정되지 않았습니다. 주소를 아는 누구나 접근할 수 있습니다.")
     n = analyzer.requeue_unfinished()
     if n:
         log.info("미완료 사진 %d장을 다시 분석 큐에 넣었습니다.", n)
@@ -46,21 +50,30 @@ app.add_middleware(
     allow_origins=settings.cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
 
-app.include_router(sessions.router)
-app.include_router(photos.router)
-app.include_router(items.router)
-app.include_router(orders.router)
-app.include_router(events.router)
+# 인증 없이 열려 있는 것은 /api/health, /api/auth, /api/login, /api/logout 뿐이다.
+app.include_router(auth_router)
+protected = [Depends(require_auth)]
+for r in (sessions, photos, items, orders, events, rates, usage):
+    app.include_router(r.router, dependencies=protected)
 
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"ok": True, "model": settings.claude_model, "subscribers": hub.subscriber_count}
+    return {"ok": True}
+
+
+@app.get("/api/status", dependencies=protected)
+def status() -> dict:
+    return {"ok": True, "engine": settings.menu_engine, "model": settings.claude_model, "subscribers": hub.subscriber_count}
 
 
 # ---- 프론트엔드 정적 파일 + SPA 폴백 ----
+# index.html 과 서비스 워커는 항상 최신을 받도록 캐시하지 않는다 (해시가 붙은 /assets 만 장기 캐시).
+_NO_CACHE = {"Cache-Control": "no-cache"}
+
 if STATIC_DIR.exists():
     app.mount("/assets", StaticFiles(directory=STATIC_DIR / "assets"), name="assets")
 
@@ -70,7 +83,7 @@ if STATIC_DIR.exists():
             return JSONResponse({"detail": "Not Found"}, status_code=404)
         candidate = STATIC_DIR / full_path
         if full_path and candidate.is_file():
-            return FileResponse(candidate)
-        return FileResponse(STATIC_DIR / "index.html")
+            return FileResponse(candidate, headers=_NO_CACHE if full_path == "sw.js" else None)
+        return FileResponse(STATIC_DIR / "index.html", headers=_NO_CACHE)
 else:
     log.warning("프론트엔드 빌드(%s)가 없습니다. API 만 제공합니다.", STATIC_DIR)

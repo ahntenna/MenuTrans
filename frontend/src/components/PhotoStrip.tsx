@@ -63,6 +63,13 @@ export default function PhotoStrip({ photos, onError }: { photos: Photo[]; onErr
                 {open.restaurant_hint && <span className="chip">{open.restaurant_hint}</span>}
               </p>
               {open.error && <p className={open.status === 'error' ? 'error' : 'info'}>{open.error}</p>}
+              {open.engine_model && (
+                <p className="muted small">
+                  마지막 분석: {open.engine_model} · 입력 {open.input_tokens.toLocaleString('ko-KR')} / 출력{' '}
+                  {open.output_tokens.toLocaleString('ko-KR')} 토큰
+                  {open.cost_usd !== null && ` · $${open.cost_usd.toFixed(4)}`}
+                </p>
+              )}
               <div className="row">
                 {open.status !== 'processing' && <button onClick={() => retry(open)}>다시 분석</button>}
                 <button className="danger" onClick={() => remove(open)}>

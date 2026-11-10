@@ -48,3 +48,23 @@ export function RefreshIcon() {
     </svg>
   )
 }
+
+export function ImageIcon() {
+  return (
+    <svg {...base}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <circle cx="8.5" cy="9.5" r="1.5" />
+      <path d="M21 16l-5-5-9 9" />
+    </svg>
+  )
+}
+
+export function ShareIcon() {
+  return (
+    <svg {...base}>
+      <path d="M12 15V3" />
+      <path d="M8 7l4-4 4 4" />
+      <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
+    </svg>
+  )
+}

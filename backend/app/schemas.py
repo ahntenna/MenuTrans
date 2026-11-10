@@ -31,6 +31,7 @@ class MenuItemOut(ORMModel):
     price_text: str
     price_value: float | None
     tags: list[str]
+    bbox: list[int] | None = None
 
 
 class MenuItemUpdate(BaseModel):
@@ -55,6 +56,10 @@ class PhotoOut(ORMModel):
     currency: str
     restaurant_hint: str
     progress_total: int
+    engine_model: str = ""
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cost_usd: float | None = None
     created_at: datetime
     started_at: datetime | None
     analyzed_at: datetime | None
@@ -156,6 +161,15 @@ class SessionSummary(_SessionBase):
     pending_count: int = 0
 
 
+class UsageSummary(BaseModel):
+    calls: int = 0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cost_usd: float = 0.0
+
+
 class SessionDetail(_SessionBase):
     photos: list[PhotoOut]
     orders: list[OrderOut]
+    # 이 세션에서 쓴 번역 API 사용량 (재분석 포함 누적)
+    usage: UsageSummary = UsageSummary()

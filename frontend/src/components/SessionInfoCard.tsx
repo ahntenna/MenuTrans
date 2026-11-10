@@ -1,7 +1,8 @@
 import { FormEvent, useState } from 'react'
 import { api, SessionDetail, SessionPatch } from '../api'
 import { formatVisit, googleMapsUrl, isoToLocalInput, localInputToIso } from '../format'
-import { MapPinIcon } from './icons'
+import { formatKrw, formatUsd, toKrw, useRates } from '../rates'
+import { MapPinIcon, ShareIcon } from './icons'
 
 // 세션 상단: 제목 + 가게 정보(상호명, 주소, 구글 맵) + 방문 일시. 탭하면 편집 폼이 열린다.
 export default function SessionInfoCard({
@@ -14,7 +15,25 @@ export default function SessionInfoCard({
   onDelete: () => void
 }) {
   const [editing, setEditing] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const mapUrl = googleMapsUrl(session)
+  const rates = useRates()
+  const usage = session.usage
+
+  // 공유: 기기의 공유 시트(카카오톡, 메모 등) → 지원하지 않으면 클립보드 복사
+  const share = async () => {
+    try {
+      const text = await api.exportText(session.id)
+      if (navigator.share) {
+        await navigator.share({ title: session.name, text })
+      } else {
+        await navigator.clipboard.writeText(text)
+        window.alert('세션 내용을 클립보드에 복사했습니다.')
+      }
+    } catch (e) {
+      if ((e as Error).name !== 'AbortError') onError(`공유하지 못했습니다: ${(e as Error).message}`)
+    }
+  }
   const hasStore = session.store_name || session.address || session.lat !== null || session.map_url
 
   return (
@@ -44,7 +63,28 @@ export default function SessionInfoCard({
           <span className="muted small">가게 정보를 입력하면 지도 링크가 생깁니다.</span>
         )}
         {!hasStore && !mapUrl && null}
+        <button className="with-icon" onClick={share}>
+          <ShareIcon /> 공유
+        </button>
+        <button onClick={() => setExporting((v) => !v)}>내보내기</button>
       </div>
+      {exporting && (
+        <div className="row export-row">
+          <a className="chip-link" href={api.exportUrl(session.id, 'md')} download>
+            텍스트 (.md)
+          </a>
+          <a className="chip-link" href={api.exportUrl(session.id, 'json')} download>
+            데이터 (.json)
+          </a>
+          <span className="muted small">메뉴판과 주문 기록이 파일로 저장됩니다.</span>
+        </div>
+      )}
+      {usage.calls > 0 && (
+        <div className="muted small cost-line">
+          번역 비용 {formatUsd(usage.cost_usd)} {formatKrw(toKrw(usage.cost_usd, 'USD', rates))} · 분석 {usage.calls}회 · 토큰{' '}
+          {(usage.input_tokens + usage.output_tokens).toLocaleString('ko-KR')}
+        </div>
+      )}
       {session.note && <p className="muted small note">{session.note}</p>}
 
       {editing && <EditDialog session={session} onClose={() => setEditing(false)} onError={onError} onDelete={onDelete} />}

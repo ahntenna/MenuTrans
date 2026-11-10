@@ -16,11 +16,12 @@ from sqlalchemy import select
 from .config import settings
 from .db import SessionLocal
 from .engine import ClaudeMenuEngine, MenuEngine
-from .engine.base import EngineMeta, ExtractedItem, MenuExtraction
+from .engine.base import EngineMeta, EngineUsage, ExtractedItem, MenuExtraction
 from .engine.claude import EngineRefused
 from .events import hub
 from .images import analysis_jpeg
-from .models import MenuItem, Photo
+from .models import MenuItem, Photo, UsageLog
+from .pricing import cost_usd
 
 log = logging.getLogger(__name__)
 
@@ -84,6 +85,8 @@ class Analyzer:
                         if self._add_item(photo_id, session_id, count, payload):
                             count += 1
                             hub.publish("item.added", {"session_id": session_id, "photo_id": photo_id, "count": count})
+                    elif kind == "usage":
+                        self._record_usage(photo_id, session_id, payload)
                     elif kind == "done":
                         self._finish(photo_id, payload, count)
                         self._notify(session_id, photo_id, "done")
@@ -121,10 +124,24 @@ class Analyzer:
                     price_text=it.price_text.strip(),
                     price_value=it.price_value,
                     tags=[t for t in it.tags if t],
+                    bbox=it.box,
                 )
             )
             db.commit()
             return True
+
+    def _record_usage(self, photo_id: str, session_id: str, usage: EngineUsage) -> None:
+        cost = cost_usd(usage.model, usage.input_tokens, usage.output_tokens)
+        with SessionLocal() as db:
+            db.add(UsageLog(session_id=session_id, photo_id=photo_id, model=usage.model,
+                            input_tokens=usage.input_tokens, output_tokens=usage.output_tokens, cost_usd=cost))
+            photo = db.get(Photo, photo_id)
+            if photo is not None:
+                photo.engine_model = usage.model
+                photo.input_tokens = usage.input_tokens
+                photo.output_tokens = usage.output_tokens
+                photo.cost_usd = cost
+            db.commit()
 
     def _finish(self, photo_id: str, result: MenuExtraction, count: int) -> None:
         with SessionLocal() as db:
